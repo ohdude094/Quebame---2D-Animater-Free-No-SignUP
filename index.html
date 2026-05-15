@@ -2406,6 +2406,19 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeAIModal();
 });
 </script>
-
+<script>
+  window.mindpalConfig = {
+    chatbotId: "quebame-animation-expert-088",
+    display: {
+    type: "floating-corner",
+    anchor: "right"
+  },
+    behavior: {
+    showInitialMessageBubbleWhenMinimized: true,
+    minimizedByDefault: true
+  }
+  };
+</script>
+<script src="https://chatbot.getmindpal.com/embed.min.js"></script>
 </body>
 </html>
