@@ -2341,18 +2341,83 @@ async function runAIGenerate() {
   _aiBase64 = null;
 
   try {
-    const res = await fetch('/api/generate-image-base64', {
+    // Replace lines ~1520-1545 with this:
+async function runAIGenerate() {
+  const prompt = document.getElementById('ai-prompt-input').value.trim();
+  if (!prompt) { document.getElementById('ai-status-text').textContent = 'Please enter a prompt.'; return; }
+
+  // Get token from user input (not hardcoded!)
+  let token = sessionStorage.getItem('hf_token');
+  if (!token) {
+    token = prompt('Enter your Hugging Face token (get it from huggingface.co/settings/tokens):');
+    if (!token) { document.getElementById('ai-status-text').textContent = 'Token required.'; return; }
+    sessionStorage.setItem('hf_token', token);
+  }
+
+  const genBtn = document.getElementById('ai-gen-btn');
+  const spinner = document.getElementById('ai-spinner');
+  const statusText = document.getElementById('ai-status-text');
+
+  genBtn.disabled = true;
+  genBtn.textContent = 'Generating…';
+  spinner.style.display = 'block';
+  statusText.textContent = 'Sending request to AI…';
+  document.getElementById('ai-preview').style.display = 'none';
+  document.getElementById('ai-place-btn').style.display = 'none';
+  _aiBase64 = null;
+
+  try {
+    const res = await fetch('https://router.huggingface.co/hf-inference/models/' + document.getElementById('ai-model').value, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
-        prompt,
-        negative_prompt: document.getElementById('ai-neg-input').value.trim(),
-        width: parseInt(document.getElementById('ai-width').value),
-        height: parseInt(document.getElementById('ai-height').value),
-        model: document.getElementById('ai-model').value
+        inputs: prompt,
+        parameters: {
+          negative_prompt: document.getElementById('ai-neg-input').value.trim(),
+          width: parseInt(document.getElementById('ai-width').value),
+          height: parseInt(document.getElementById('ai-height').value),
+        }
       })
     });
 
+    if (!res.ok) {
+      const err = await res.text();
+      statusText.textContent = '⚠ Error ' + res.status + ': ' + err.substring(0, 100);
+      if (res.status === 401) {
+        sessionStorage.removeItem('hf_token'); // clear bad token
+        statusText.textContent += ' (Token cleared, retry to enter new one)';
+      }
+      genBtn.disabled = false;
+      genBtn.textContent = '✦ Generate';
+      spinner.style.display = 'none';
+      return;
+    }
+
+    const blob = await res.blob();
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      _aiBase64 = reader.result;
+      const prev = document.getElementById('ai-preview');
+      prev.src = _aiBase64;
+      prev.style.display = 'block';
+      document.getElementById('ai-place-btn').style.display = '';
+      genBtn.textContent = '↺ Regenerate';
+      statusText.textContent = '✓ Done! Preview above.';
+      spinner.style.display = 'none';
+      genBtn.disabled = false;
+    };
+    reader.readAsDataURL(blob);
+
+  } catch (err) {
+    statusText.textContent = '⚠ Network error: ' + err.message;
+    genBtn.disabled = false;
+    genBtn.textContent = '✦ Generate';
+    spinner.style.display = 'none';
+  }
+}
     const data = await res.json();
 
     if (!res.ok || !data.success) {
