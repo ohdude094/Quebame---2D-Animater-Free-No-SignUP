@@ -1,0 +1,4204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quebame v2.0</title>
+<style>
+:root {
+  --bg: #1a1a1a;
+  --bg2: #242424;
+  --bg3: #2e2e2e;
+  --bg4: #383838;
+  --border: #444;
+  --text: #e8e8e8;
+  --text2: #aaa;
+  --accent: #00d4ff;
+  --accent2: #ff6b35;
+  --red: #ff4444;
+  --green: #44ff88;
+  --sel: rgba(0,212,255,0.2);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+/* TOP BAR */
+#topbar { height: 38px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+#logo { padding: 0 16px; font-weight: 700; font-size: 15px; color: var(--accent); letter-spacing: 2px; border-right: 1px solid var(--border); height: 100%; display: flex; align-items: center; }
+.mode-tab { padding: 0 20px; height: 100%; display: flex; align-items: center; cursor: pointer; color: var(--text2); border-right: 1px solid var(--border); transition: all 0.15s; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+.mode-tab:hover { background: var(--bg3); color: var(--text); }
+.mode-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--bg3); }
+#topbar-actions { margin-left: auto; display: flex; gap: 0; }
+.tb-btn { padding: 0 12px; height: 38px; display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text2); border-left: 1px solid var(--border); font-size: 12px; transition: all 0.15s; background: none; border-top: none; border-right: none; border-bottom: none; }
+.tb-btn:hover { background: var(--bg3); color: var(--text); }
+#dirty-indicator { color: var(--accent2); font-size: 12px; padding: 0 8px; }
+#project-name { padding: 0 12px; color: var(--text2); font-size: 12px; }
+
+/* WORKSPACE */
+#workspace { flex: 1; display: flex; overflow: hidden; }
+
+/* LEFT TOOLBAR */
+#toolbar { width: 52px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 2px; flex-shrink: 0; }
+.tool-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: var(--text2); transition: all 0.15s; position: relative; border: 1px solid transparent; background: none; }
+.tool-btn:hover { background: var(--bg3); color: var(--text); }
+.tool-btn.active { background: var(--sel); color: var(--accent); border-color: rgba(0,212,255,0.3); }
+.tool-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tool-sep { width: 30px; height: 1px; background: var(--border); margin: 4px 0; }
+.tool-tip { position: absolute; left: 50px; background: #000; color: #fff; padding: 4px 8px; border-radius: 4px; white-space: nowrap; font-size: 11px; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100; }
+.tool-btn:hover .tool-tip { opacity: 1; }
+
+/* CENTER CANVAS AREA */
+#canvas-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); position: relative; }
+#canvas-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+#canvas-wrapper { position: relative; transform-origin: center center; }
+#main-canvas { display: block; cursor: crosshair; }
+#onion-canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+#canvas-info { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; font-size: 11px; color: var(--text2); pointer-events: none; }
+#canvas-zoom { position: absolute; bottom: 8px; right: 8px; display: flex; align-items: center; gap: 6px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; }
+#canvas-zoom input { width: 80px; }
+#canvas-zoom span { font-size: 11px; color: var(--text2); min-width: 36px; text-align: right; }
+
+/* PLAYBACK */
+#playback-bar { height: 40px; background: var(--bg2); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 12px; flex-shrink: 0; }
+.pb-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 5px; color: var(--text2); transition: all 0.15s; border: 1px solid transparent; background: none; }
+.pb-btn:hover { background: var(--bg3); color: var(--text); }
+.pb-btn.active { background: rgba(0,212,255,0.15); color: var(--accent); }
+.pb-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#loop-btn.looping { color: var(--accent); }
+#fps-control { margin-left: 12px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
+#fps-control select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 2px 4px; border-radius: 4px; font-size: 11px; }
+#frame-counter { margin-left: 12px; font-size: 11px; color: var(--text2); }
+
+/* BOTTOM TIMELINE */
+#timeline-panel { height: 80px; background: #1a1a1a; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; }
+#timeline-track { flex: 1; position: relative; overflow: hidden; background: #1a1a1a; cursor: pointer; }
+#timeline-cells { display: flex; height: 100%; padding: 4px; gap: 2px; align-items: stretch; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; }
+.tl-cell { min-width: 48px; height: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 4px; flex-shrink: 0; }
+.tl-cell:hover { border-color: var(--text2); }
+.tl-cell.current { border-color: var(--accent); background: rgba(0,212,255,0.1); }
+.tl-cell canvas { width: 100%; height: calc(100% - 16px); position: absolute; top: 0; left: 0; object-fit: contain; }
+.tl-num { font-size: 9px; color: var(--text2); z-index: 1; }
+#timeline-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); pointer-events: none; z-index: 10; }
+
+/* RIGHT SIDEBAR */
+#sidebar { width: 260px; background: var(--bg2); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+.sidebar-section { border-bottom: 1px solid var(--border); }
+.sidebar-header { padding: 8px 12px; font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--bg2); }
+.sidebar-header:hover { background: var(--bg3); }
+.sidebar-body { padding: 8px 12px; }
+
+/* FRAME STRIP */
+#frame-strip { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.frame-thumb { width: 100%; height: 64px; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.frame-thumb:hover { border-color: var(--text2); }
+.frame-thumb.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.frame-thumb canvas { max-width: 100%; max-height: 100%; }
+.frame-num { position: absolute; bottom: 3px; right: 5px; font-size: 9px; color: var(--text2); background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 2px; }
+.frame-dur { position: absolute; bottom: 3px; left: 5px; font-size: 9px; color: var(--text2); background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 2px; }
+.frame-strip-header { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.frame-strip-header span { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; }
+.icon-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 4px; color: var(--text2); border: 1px solid var(--border); background: none; transition: all 0.15s; }
+.icon-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--text2); }
+.icon-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* PROPERTIES PANEL */
+.prop-row { display: flex; align-items: center; margin-bottom: 6px; gap: 6px; }
+.prop-label { font-size: 11px; color: var(--text2); width: 60px; flex-shrink: 0; }
+.prop-input { flex: 1; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 3px 6px; border-radius: 4px; font-size: 12px; }
+.prop-input:focus { outline: none; border-color: var(--accent); }
+.color-swatch { width: 28px; height: 22px; border-radius: 4px; cursor: pointer; border: 1px solid var(--border); }
+input[type=range] { flex: 1; accent-color: var(--accent); }
+input[type=color] { width: 28px; height: 22px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: none; }
+
+/* SOUND MODE */
+#sound-workspace { display:none; flex:1; flex-direction:column; overflow:hidden; }
+#sound-canvas-area { flex:1; background:#1a1a1a; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; min-height:0; }
+#sound-preview-canvas { background:#fff; box-shadow:0 4px 32px rgba(0,0,0,0.5); cursor:default; max-width:100%; max-height:100%; }
+#sound-bottom { height:200px; min-height:200px; background:#111; border-top:2px solid #333; display:flex; flex-direction:column; flex-shrink:0; }
+#sound-controls-bar { height:36px; min-height:36px; background:#1e1e1e; border-bottom:1px solid #2e2e2e; display:flex; align-items:center; padding:0 10px; gap:8px; flex-shrink:0; }
+/* Frame strip scroll container */
+#sound-frame-strip-wrap { flex:1; min-height:0; overflow:hidden; background:#111; }
+#sound-frame-strip-scroll { width:100%; height:100%; overflow-x:auto; overflow-y:hidden; }
+#sound-frame-strip { display:flex; flex-direction:row; height:100%; align-items:stretch; gap:0; min-width:max-content; }
+/* Each frame column — fixed sizes, NO flex collapse */
+.sf-col { display:flex; flex-direction:column; flex-shrink:0; cursor:pointer; border-right:1px solid #2a2a2a; width:64px; height:100%; transition:background 0.1s; position:relative; box-sizing:border-box; }
+.sf-col:hover { background:rgba(255,255,255,0.05); }
+.sf-col.sf-active { background:rgba(0,212,255,0.1); border-right:1px solid rgba(0,212,255,0.4); }
+.sf-col.sf-active .sf-num { color:var(--accent); }
+.sf-thumb { width:64px; height:44px; flex-shrink:0; background:#222; display:block; border-bottom:1px solid #1a1a1a; }
+.sf-num { font-size:9px; color:#555; text-align:center; padding:2px 0 1px; flex-shrink:0; background:#161616; border-bottom:1px solid #1a1a1a; line-height:1; }
+/* Wave area fills remaining space */
+.sf-wave { flex:1; min-height:0; background:#0a0a0a; position:relative; overflow:hidden; }
+.sf-wave-canvas { display:block; width:64px; position:absolute; top:0; left:0; }
+.sf-mouth-dot { position:absolute; bottom:3px; right:3px; width:7px; height:7px; border-radius:50%; background:#ff6b35; display:none; box-shadow:0 0 3px #ff6b35; }
+
+/* Sound playhead */
+#sound-playhead { position:absolute; top:0; bottom:0; width:2px; background:var(--red); pointer-events:none; z-index:20; box-shadow:0 0 4px var(--red); transition:left 0.05s linear; }
+#sound-frame-strip-wrap { position:relative; }
+
+/* Sound frame tools in sidebar */
+#sound-frame-tools { border-bottom: 1px solid var(--border); display:none; }
+.sound-tool-btn { width:100%; padding:7px 12px; background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:5px; font-size:12px; cursor:pointer; text-align:left; transition:all 0.15s; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.sound-tool-btn:hover { background:var(--bg4); border-color:var(--text2); }
+.sound-tool-btn.danger { color:var(--red); border-color:rgba(255,68,68,0.3); }
+.sound-tool-btn.danger:hover { background:rgba(255,68,68,0.1); border-color:var(--red); }
+
+/* Frame trim modal */
+#trim-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:900; display:none; align-items:center; justify-content:center; }
+#trim-modal.show { display:flex; }
+#trim-box { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:22px; min-width:320px; }
+#trim-box h3 { font-size:14px; margin-bottom:14px; }
+#trim-remove-select { display:flex; gap:6px; margin-bottom:14px; }
+.trim-side-btn { flex:1; padding:8px; border:2px solid var(--border); border-radius:6px; background:var(--bg3); color:var(--text2); cursor:pointer; font-size:12px; text-align:center; transition:all 0.15s; }
+.trim-side-btn.active { border-color:var(--accent); color:var(--accent); background:var(--sel); }
+
+/* Split frame modal */
+#split-modal { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:800; display:none; align-items:center; justify-content:center; }
+#split-modal.show { display:flex; }
+#split-box { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:24px; min-width:300px; }
+
+/* Multi-select rig indicator */
+#rig-multi-badge { display:none; background:linear-gradient(135deg,#7c3aed,#00d4ff); color:#fff; font-size:10px; padding:2px 8px; border-radius:20px; font-weight:700; margin-left:6px; }
+
+/* Rig object picker modal */
+#rig-picker-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:900; display:none; align-items:center; justify-content:center; }
+#rig-picker-modal.show { display:flex; }
+#rig-picker-box { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:22px; min-width:300px; max-width:420px; max-height:80vh; display:flex; flex-direction:column; }
+#rig-picker-box h3 { font-size:14px; margin-bottom:6px; color:var(--text); display:flex; align-items:center; gap:8px; }
+#rig-picker-subtitle { font-size:11px; color:var(--text2); margin-bottom:14px; }
+#rig-picker-list { overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:4px; margin-bottom:14px; }
+.rig-pick-item { display:flex; align-items:center; gap:10px; padding:7px 10px; border:1px solid var(--border); border-radius:6px; cursor:pointer; transition:all 0.12s; }
+.rig-pick-item:hover { background:var(--bg3); border-color:var(--text2); }
+.rig-pick-item.checked { background:var(--sel); border-color:rgba(0,212,255,0.5); }
+.rig-pick-check { width:16px; height:16px; border:2px solid var(--border); border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.12s; }
+.rig-pick-item.checked .rig-pick-check { background:var(--accent); border-color:var(--accent); }
+.rig-pick-check::after { content:'✓'; font-size:10px; color:#000; display:none; font-weight:700; }
+.rig-pick-item.checked .rig-pick-check::after { display:block; }
+.rig-pick-label { font-size:12px; color:var(--text); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rig-pick-type { font-size:10px; color:var(--text2); background:var(--bg4); padding:1px 5px; border-radius:3px; flex-shrink:0; }
+#rig-picker-actions { display:flex; gap:8px; justify-content:flex-end; }
+#rig-picker-selall { font-size:11px; color:var(--accent); cursor:pointer; margin-right:auto; background:none; border:none; padding:0; }
+#rig-picker-selall:hover { text-decoration:underline; }
+
+.sound-ctrl-btn { width:26px; height:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:4px; color:var(--text2); border:1px solid #333; background:none; transition:all 0.15s; flex-shrink:0; }
+.sound-ctrl-btn:hover { background:#2e2e2e; color:var(--text); }
+.sound-ctrl-btn svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+#sound-upload-btn { padding:0 10px; height:24px; background:var(--accent); color:#000; border:none; border-radius:4px; font-size:11px; cursor:pointer; font-weight:700; flex-shrink:0; }
+#sound-upload-btn:hover { opacity:0.85; }
+#sound-lipsync-btn { padding:0 10px; height:24px; background:#7c3aed; color:#fff; border:none; border-radius:4px; font-size:11px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:4px; flex-shrink:0; }
+#sound-lipsync-btn:hover { opacity:0.85; }
+#sound-status { font-size:10px; color:#666; margin-left:auto; white-space:nowrap; }
+
+/* LIP SYNC MODAL */
+#lipsync-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:900; display:none; align-items:center; justify-content:center; }
+#lipsync-modal.show { display:flex; }
+#lipsync-box { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:24px; width:780px; max-width:97vw; max-height:95vh; overflow-y:auto; }
+#lipsync-box h3 { font-size:15px; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.lipsync-badge { font-size:10px; background:linear-gradient(135deg,#7c3aed,#00d4ff); color:#fff; padding:2px 7px; border-radius:20px; font-weight:700; }
+#lipsync-subtitle { font-size:11px; color:var(--text2); margin-bottom:16px; line-height:1.6; }
+#lipsync-mouths-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.mouth-cell { background:var(--bg3); border:2px solid var(--border); border-radius:8px; padding:8px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:all 0.15s; }
+.mouth-cell:hover { border-color:var(--text2); }
+.mouth-cell.drawing { border-color:var(--accent); background:rgba(0,212,255,0.05); }
+.mouth-cell.done { border-color:var(--green); }
+.mouth-label { font-size:10px; color:var(--text2); text-align:center; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.mouth-canvas-wrap { width:100%; aspect-ratio:1.6; background:#fff; border-radius:4px; overflow:hidden; cursor:crosshair; position:relative; }
+.mouth-draw-canvas { width:100%; height:100%; display:block; cursor:crosshair; }
+.mouth-phoneme { font-size:10px; color:var(--accent); font-family:monospace; }
+#lipsync-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:8px; align-items:center; }
+#lipsync-hint { font-size:11px; color:var(--text2); flex:1; }
+#lipsync-analyze-btn { padding:6px 18px; background:#7c3aed; color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:13px; font-weight:600; }
+#lipsync-analyze-btn:hover { opacity:0.85; }
+#lipsync-analyze-btn:disabled { opacity:0.4; cursor:not-allowed; }
+#lipsync-progress { font-size:11px; color:var(--accent); margin-top:8px; display:none; }
+
+#object-list { flex: 1; overflow-y: auto; }
+.obj-item { display: flex; align-items: center; gap: 6px; padding: 5px 12px; cursor: pointer; border-radius: 0; transition: background 0.1s; }
+.obj-item:hover { background: var(--bg3); }
+.obj-item.selected { background: var(--sel); }
+.obj-type-icon { width: 16px; height: 16px; flex-shrink: 0; }
+.obj-name { flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obj-vis { width: 16px; height: 16px; cursor: pointer; color: var(--text2); flex-shrink: 0; }
+
+/* CONTEXT MENU */
+#ctx-menu { position: fixed; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 0; z-index: 1000; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.5); min-width: 160px; }
+.ctx-item { padding: 6px 14px; cursor: pointer; font-size: 12px; color: var(--text); }
+.ctx-item:hover { background: var(--bg3); color: var(--accent); }
+.ctx-sep { height: 1px; background: var(--border); margin: 3px 0; }
+
+/* SCROLLBARS */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+/* MODAL */
+#modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; align-items: center; justify-content: center; }
+#modal-overlay.show { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 24px; min-width: 320px; }
+.modal h3 { margin-bottom: 16px; font-size: 15px; }
+.modal-row { margin-bottom: 12px; }
+.modal-row label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.modal-row input, .modal-row select { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 6px 8px; border-radius: 5px; font-size: 13px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.btn { padding: 6px 16px; border-radius: 5px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--text); transition: all 0.15s; }
+.btn:hover { background: var(--bg4); }
+.btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.btn.primary:hover { opacity: 0.85; }
+.btn.danger { background: var(--red); color: #fff; border-color: var(--red); }
+
+/* ONION SKIN SETTINGS */
+.toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.toggle { width: 32px; height: 18px; background: var(--bg4); border-radius: 9px; cursor: pointer; position: relative; transition: background 0.2s; }
+.toggle.on { background: var(--accent); }
+.toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
+.toggle.on::after { transform: translateX(14px); }
+
+/* AI GENERATE MODAL */
+#ai-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 600; display: none; align-items: center; justify-content: center; }
+#ai-modal.show { display: flex; }
+#ai-modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 420px; max-width: 95vw; }
+#ai-modal-box h3 { margin-bottom: 4px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+#ai-modal-box h3 span.ai-badge { font-size: 10px; background: linear-gradient(135deg,#00d4ff,#7c3aed); color: #fff; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; font-weight: 600; }
+#ai-subtitle { font-size: 11px; color: var(--text2); margin-bottom: 16px; }
+#ai-prompt-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 6px; font-size: 13px; resize: vertical; min-height: 72px; font-family: inherit; }
+#ai-prompt-input:focus { outline: none; border-color: var(--accent); }
+.ai-row { display: flex; gap: 10px; margin-top: 10px; }
+.ai-row label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 4px; }
+.ai-row select, .ai-row input { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 5px 8px; border-radius: 5px; font-size: 12px; }
+.ai-row > div { flex: 1; }
+#ai-neg-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 12px; margin-top: 10px; }
+#ai-neg-input:focus { outline: none; border-color: var(--accent); }
+#ai-status { min-height: 20px; font-size: 11px; color: var(--text2); margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+#ai-status .spinner { width: 12px; height: 12px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#ai-preview { width: 100%; max-height: 160px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border); margin-top: 10px; display: none; }
+.ai-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+#ai-place-btn { display: none; }
+
+/* AI CUT MODAL */
+#aicut-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 700; display: none; align-items: center; justify-content: center; }
+#aicut-modal.show { display: flex; }
+#aicut-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 460px; max-width: 96vw; }
+#aicut-box h3 { margin-bottom: 4px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.cut-badge { font-size: 10px; background: linear-gradient(135deg,#ff6b35,#ff4444); color:#fff; padding: 2px 7px; border-radius: 20px; font-weight:700; letter-spacing:0.5px; }
+#aicut-subtitle { font-size:11px; color:var(--text2); margin-bottom:14px; line-height:1.6; }
+#aicut-api-input { width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:7px 10px; border-radius:6px; font-size:12px; font-family:monospace; }
+#aicut-api-input:focus { outline:none; border-color:var(--accent2); }
+#aicut-api-hint { font-size:10px; color:var(--text2); margin-top:4px; margin-bottom:12px; }
+#aicut-api-hint a { color:var(--accent); text-decoration:none; }
+#aicut-drop { width:100%; height:100px; border:2px dashed var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; cursor:pointer; transition:border-color 0.15s; margin-bottom:10px; font-size:12px; color:var(--text2); }
+#aicut-drop:hover, #aicut-drop.drag-over { border-color:var(--accent2); color:var(--text); }
+#aicut-drop svg { width:28px; height:28px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+#aicut-preview-row { display:flex; gap:10px; margin-bottom:10px; display:none; }
+#aicut-preview-row > div { flex:1; text-align:center; }
+#aicut-preview-row label { font-size:10px; color:var(--text2); display:block; margin-bottom:4px; }
+#aicut-preview-row img { width:100%; max-height:110px; object-fit:contain; border:1px solid var(--border); border-radius:6px; background: repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 12px 12px; }
+#aicut-status { font-size:11px; color:var(--text2); min-height:18px; display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+#aicut-status .spinner { width:12px; height:12px; border:2px solid var(--border); border-top-color:var(--accent2); border-radius:50%; animation:spin 0.7s linear infinite; display:none; flex-shrink:0; }
+.aicut-actions { display:flex; gap:8px; justify-content:flex-end; }
+#aicut-place-btn { display:none; }
+
+/* IMPROVED FILL SIDEBAR */
+#fill-panel { display:none; }
+.fill-mode-row { display:flex; gap:4px; margin-bottom:8px; }
+.fill-mode-btn { flex:1; padding:4px 0; font-size:11px; border:1px solid var(--border); background:var(--bg3); color:var(--text2); border-radius:4px; cursor:pointer; text-align:center; transition:all 0.15s; }
+.fill-mode-btn.active { background:var(--sel); color:var(--accent); border-color:rgba(0,212,255,0.4); }
+#fill-grad-row { display:none; }
+#fill-tolerance-row { margin-bottom:6px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div id="logo">QUEBAME</div>
+  <div class="mode-tab active" data-mode="draw" onclick="setMode('draw')">Draw</div>
+  <div class="mode-tab" data-mode="animate" onclick="setMode('animate')">Animate</div>
+
+  <span id="project-name">Untitled Project</span>
+  <span id="dirty-indicator" style="display:none">●</span>
+  <div id="topbar-actions">
+    <button class="tb-btn" onclick="newProject()">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      New
+    </button>
+    <button class="tb-btn" onclick="exportProject()">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button class="tb-btn" onclick="showCanvasSettings()">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0"/><path d="M4.93 19.07a10 10 0 0 0 14.14 0"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      Settings
+    </button>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div id="workspace">
+
+  <!-- LEFT TOOLBAR -->
+  <div id="toolbar">
+    <button class="tool-btn active" data-tool="pen" onclick="setTool('pen')" title="Pen">
+      <svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      <span class="tool-tip">Pen (B)</span>
+    </button>
+    <button class="tool-btn" data-tool="eraser" onclick="setTool('eraser')" title="Eraser">
+      <svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-1.5 1.5"/><path d="M6.0001 11L13 18"/></svg>
+      <span class="tool-tip">Eraser (E)</span>
+    </button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" data-tool="select" onclick="setTool('select')" title="Select">
+      <svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7-3-17z"/></svg>
+      <span class="tool-tip">Select (V)</span>
+    </button>
+    <button class="tool-btn" data-tool="shape" onclick="setTool('shape')" title="Shape">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      <span class="tool-tip">Shape (O)</span>
+    </button>
+    <button class="tool-btn" data-tool="text" onclick="setTool('text')" title="Text">
+      <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+      <span class="tool-tip">Text (T)</span>
+    </button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" data-tool="paint" onclick="setTool('paint')" title="Fill">
+      <svg viewBox="0 0 24 24"><path d="M19 11l-8-8-8.5 8.5a5.5 5.5 0 0 0 7.78 7.78L19 11z"/><path d="M20 21.2a1 1 0 1 1 2 0 1 1 0 0 1-2 0z"/><path d="M20.2 19a7.5 7.5 0 0 1 1.8 2.2"/></svg>
+      <span class="tool-tip">Fill (F)</span>
+    </button>
+    <button class="tool-btn" data-tool="import" onclick="importImage()" title="Import Image">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <span class="tool-tip">Import Image</span>
+    </button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" data-tool="rig" onclick="setTool('rig')" title="Rig">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><line x1="12" y1="6" x2="8" y2="12"/><line x1="12" y1="6" x2="16" y2="12"/><circle cx="8" cy="13" r="2"/><circle cx="16" cy="13" r="2"/><line x1="8" y1="15" x2="6" y2="21"/><line x1="16" y1="15" x2="18" y2="21"/><circle cx="6" cy="22" r="1.5"/><circle cx="18" cy="22" r="1.5"/></svg>
+      <span class="tool-tip">Rig (R)</span>
+    </button>
+
+    <div class="tool-sep"></div>
+    <button class="tool-btn" onclick="undo()" title="Undo">
+      <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.51"/></svg>
+      <span class="tool-tip">Undo (Ctrl+Z)</span>
+    </button>
+    <button class="tool-btn" onclick="redo()" title="Redo">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.51"/></svg>
+      <span class="tool-tip">Redo (Ctrl+Y)</span>
+    </button>
+  </div>
+
+  <!-- CENTER -->
+  <div id="canvas-area">
+    <div id="canvas-container">
+      <div id="canvas-wrapper">
+        <canvas id="onion-canvas"></canvas>
+        <canvas id="main-canvas"></canvas>
+      </div>
+      <div id="canvas-info">0, 0</div>
+      <div id="canvas-zoom">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="range" id="zoom-slider" min="10" max="500" value="100" oninput="setZoom(this.value)">
+        <span id="zoom-label">100%</span>
+      </div>
+    </div>
+    <div id="playback-bar">
+      <button class="pb-btn" onclick="goFirstFrame()" title="First Frame">
+        <svg viewBox="0 0 24 24"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+      </button>
+      <button class="pb-btn" onclick="goPrevFrame()" title="Prev Frame">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="pb-btn" id="play-btn" onclick="togglePlay()" title="Play/Pause">
+        <svg viewBox="0 0 24 24" id="play-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      <button class="pb-btn" onclick="goNextFrame()" title="Next Frame">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="pb-btn" onclick="goLastFrame()" title="Last Frame">
+        <svg viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+      </button>
+      <button class="pb-btn" id="loop-btn" onclick="toggleLoop()" title="Loop">
+        <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      </button>
+      <div id="fps-control">
+        <span>FPS:</span>
+        <select id="fps-select" onchange="setFps(this.value)">
+          <option>12</option>
+          <option selected>24</option>
+          <option>30</option>
+          <option>60</option>
+        </select>
+      </div>
+      <div id="frame-counter">Frame <span id="cur-frame-num">1</span> / <span id="total-frames">1</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div id="sidebar">
+    <!-- TOOL PROPERTIES -->
+    <div class="sidebar-section">
+      <div class="sidebar-header" onclick="toggleSection('tool-props')">
+        Tool Properties
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="sidebar-body" id="tool-props">
+        <div class="prop-row">
+          <span class="prop-label">Color</span>
+          <input type="color" id="tool-color" value="#ffffff" onchange="updateToolProp('color', this.value)">
+          <span style="font-size:11px;color:var(--text2);margin-left:4px" id="tool-color-hex">#ffffff</span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">Size</span>
+          <input type="range" id="tool-size" min="1" max="100" value="8" oninput="updateToolProp('size', this.value)">
+          <span style="font-size:11px;color:var(--text2);min-width:24px;text-align:right" id="size-val">8</span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">Opacity</span>
+          <input type="range" id="tool-opacity" min="0" max="100" value="100" oninput="updateToolProp('opacity', this.value)">
+          <span style="font-size:11px;color:var(--text2);min-width:24px;text-align:right" id="opacity-val">100%</span>
+        </div>
+        <div class="prop-row" id="shape-type-row" style="display:none">
+          <span class="prop-label">Shape</span>
+          <select class="prop-input" id="shape-type" onchange="updateToolProp('shapeType', this.value)">
+            <option value="rect">Rectangle</option>
+            <option value="ellipse">Ellipse</option>
+            <option value="line">Line</option>
+            <option value="triangle">Triangle</option>
+          </select>
+        </div>
+        <div class="prop-row" id="fill-row" style="display:none">
+          <span class="prop-label">Fill</span>
+          <input type="color" id="fill-color" value="#3a7bd5" onchange="updateToolProp('fillColor', this.value)">
+          <span style="font-size:11px;color:var(--text2);margin-left:4px">fill</span>
+        </div>
+        <!-- IMPROVED PAINT FILL PANEL -->
+        <div id="fill-panel">
+          <div class="fill-mode-row">
+            <div class="fill-mode-btn active" id="fmode-flat" onclick="setFillMode('flat')">Flat</div>
+            <div class="fill-mode-btn" id="fmode-gradient" onclick="setFillMode('gradient')">Gradient</div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">Color</span>
+            <input type="color" id="paint-color1" value="#00d4ff" oninput="updateToolProp('color', this.value)">
+          </div>
+          <div class="prop-row" id="fill-grad-row">
+            <span class="prop-label">Color 2</span>
+            <input type="color" id="paint-color2" value="#7c3aed">
+          </div>
+          <div class="prop-row" id="fill-tolerance-row">
+            <span class="prop-label" style="font-size:10px">Tolerance</span>
+            <input type="range" id="fill-tolerance" min="0" max="128" value="32" oninput="document.getElementById('fill-tol-val').textContent=this.value">
+            <span style="font-size:11px;color:var(--text2);min-width:22px;text-align:right" id="fill-tol-val">32</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label" style="font-size:10px">Smooth</span>
+            <input type="range" id="fill-smooth" min="0" max="4" value="1" step="1" oninput="document.getElementById('fill-smooth-val').textContent=this.value">
+            <span style="font-size:11px;color:var(--text2);min-width:22px;text-align:right" id="fill-smooth-val">1</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label" style="font-size:10px">Opacity</span>
+            <input type="range" id="fill-opacity" min="0" max="100" value="100" oninput="document.getElementById('fill-op-val').textContent=this.value+'%'">
+            <span style="font-size:11px;color:var(--text2);min-width:28px;text-align:right" id="fill-op-val">100%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONION SKIN -->
+    <div class="sidebar-section" id="onion-section" style="display:none">
+      <div class="sidebar-header" onclick="toggleSection('onion-props')">
+        Onion Skin
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="sidebar-body" id="onion-props">
+        <div class="toggle-row">
+          <div class="toggle" id="onion-toggle" onclick="toggleOnionSkin()"></div>
+          <span style="font-size:12px">Enable Onion Skin</span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">Previous</span>
+          <input type="range" min="0" max="5" value="2" id="onion-prev" oninput="updateOnion()">
+          <span id="onion-prev-val" style="font-size:11px;color:var(--text2);min-width:12px">2</span>
+        </div>
+        <div class="prop-row">
+          <span class="prop-label">Next</span>
+          <input type="range" min="0" max="5" value="1" id="onion-next" oninput="updateOnion()">
+          <span id="onion-next-val" style="font-size:11px;color:var(--text2);min-width:12px">1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOUND FRAME TOOLS (only visible in Sound mode) -->
+    <div class="sidebar-section" id="sound-frame-tools">
+      <div class="sidebar-header" onclick="toggleSection('sound-frame-tools-body')">
+        Frame Tools
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="sidebar-body" id="sound-frame-tools-body">
+        <button class="sound-tool-btn" onclick="soundAddFrame()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Frame
+        </button>
+        <button class="sound-tool-btn" onclick="soundDuplicateFrame()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Duplicate Frame
+        </button>
+        <button class="sound-tool-btn" onclick="soundSplitFrame()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><path d="M2 12h4M18 12h4"/></svg>
+          Split Frame
+        </button>
+        <button class="sound-tool-btn" onclick="soundTrimFrame()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9 L6 15"/><path d="M18 9 L18 15"/><line x1="2" y1="12" x2="22" y2="12"/><polyline points="2 9 6 12 2 15"/><polyline points="22 9 18 12 22 15"/></svg>
+          Trim Frame Length
+        </button>
+        <button class="sound-tool-btn danger" onclick="soundDeleteFrame()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Delete Frame
+        </button>
+      </div>
+    </div>
+
+    <!-- OBJECT LIST -->
+    <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="sidebar-header" onclick="toggleSection('obj-list-body')">
+        Objects
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div id="obj-list-body" style="flex:1;overflow-y:auto">
+        <div id="object-list"></div>
+      </div>
+    </div>
+
+    <!-- FRAME STRIP -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;border-top:1px solid var(--border);min-height:150px">
+      <div class="frame-strip-header">
+        <span>Frames</span>
+        <div style="display:flex;gap:4px">
+          <button class="icon-btn" onclick="addFrame()" title="Add Frame">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="icon-btn" onclick="duplicateFrame()" title="Duplicate Frame">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="icon-btn" onclick="deleteFrame()" title="Delete Frame">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="frame-strip" style="padding:8px;overflow-y:auto;flex:1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SOUND WORKSPACE -->
+<div id="sound-workspace">
+  <div id="sound-canvas-area">
+    <canvas id="sound-preview-canvas"></canvas>
+    <div id="canvas-info-sound" style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:4px;font-size:11px;color:#aaa">Frame 1</div>
+  </div>
+  <div id="sound-bottom">
+    <div id="sound-controls-bar">
+      <button class="sound-ctrl-btn" onclick="soundGoFirst()" title="First">
+        <svg viewBox="0 0 24 24"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+      </button>
+      <button class="sound-ctrl-btn" onclick="soundGoPrev()" title="Prev">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="sound-ctrl-btn" id="sound-play-btn" onclick="soundTogglePlay()" title="Play">
+        <svg viewBox="0 0 24 24" id="sound-play-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      <button class="sound-ctrl-btn" onclick="soundGoNext()" title="Next">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="sound-ctrl-btn" onclick="soundGoLast()" title="Last">
+        <svg viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+      </button>
+      <div style="width:1px;height:20px;background:#333;margin:0 2px"></div>
+      <input type="file" id="sound-file-input" accept="audio/*" style="display:none">
+      <button id="sound-upload-btn" onclick="document.getElementById('sound-file-input').click()">+ Upload Sound</button>
+      <button id="sound-lipsync-btn" onclick="openLipSync()">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        Auto Lip Sync
+      </button>
+      <span id="sound-status">No audio loaded</span>
+      <span style="margin-left:6px;font-size:10px;color:#555">Frame <span id="sound-frame-num">1</span> / <span id="sound-total-frames">1</span></span>
+    </div>
+    <!-- Frame strip with thumbnails + waveform per frame -->
+    <div id="sound-frame-strip-wrap">
+      <div id="sound-frame-strip-scroll">
+        <div id="sound-frame-strip"></div>
+      </div>
+      <div id="sound-playhead"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIP SYNC MODAL -->
+<div id="lipsync-modal">
+  <div id="lipsync-box">
+    <h3>👄 Auto Lip Sync <span class="lipsync-badge">AI POWERED</span></h3>
+    <div id="lipsync-subtitle">
+      Draw the 12 mouth shapes below — one for each phoneme group. Then click <b>Run Lip Sync</b> to automatically assign mouth shapes to frames based on audio volume/rhythm.<br>
+      <span style="color:var(--accent)">Draw on each white box</span> — use your pen/mouse. Clear individual mouths with the ✕ button.
+    </div>
+    <div id="lipsync-mouths-grid"></div>
+    <div id="lipsync-progress"></div>
+    <div id="lipsync-actions">
+      <span id="lipsync-hint">Draw all 12 mouth shapes, then run lip sync.</span>
+      <button class="btn" onclick="closeLipSync()">Cancel</button>
+      <button class="btn" onclick="clearAllMouths()">Clear All</button>
+      <button id="lipsync-analyze-btn" onclick="runLipSync()" disabled>▶ Run Lip Sync</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div id="timeline-panel">
+  <div id="timeline-track">
+    <div id="timeline-cells"></div>
+    <div id="timeline-playhead"></div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="ctxAction('add-before')">Add Frame Before</div>
+  <div class="ctx-item" onclick="ctxAction('add-after')">Add Frame After</div>
+  <div class="ctx-item" onclick="ctxAction('duplicate')">Duplicate Frame</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('copy')">Copy Frame</div>
+  <div class="ctx-item" onclick="ctxAction('paste')">Paste Frame</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('convert-symbol')" style="color:var(--accent)">Convert to Symbol ★</div>
+  <div class="ctx-item" onclick="ctxAction('insert-instance')">Insert Instance…</div>
+  <div class="ctx-item" onclick="ctxAction('break-apart')">Break Apart Instance</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('clear')">Clear Frame</div>
+  <div class="ctx-item" onclick="ctxAction('delete')" style="color:var(--red)">Delete Frame</div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="file-input" style="display:none" accept="image/*">
+<input type="file" id="file-input-text" style="display:none" accept=".txt">
+
+<script>
+// UID — must be defined first, used everywhere
+function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+const state = {
+  mode: 'draw',
+  tool: 'pen',
+  currentFrame: 0,
+  frames: [],
+  selectedObjects: [],
+  clipboard: null,
+  frameClipboard: null,
+  isDrawing: false,
+  isPlaying: false,
+  looping: true,
+  fps: 24,
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  canvasW: 800,
+  canvasH: 600,
+  bgColor: '#1a1a1a',
+  dirty: false,
+  undoStack: [],
+  redoStack: [],
+  onionSkin: false,
+  onionPrev: 2,
+  onionNext: 1,
+  toolProps: { color: '#ffffff', size: 8, opacity: 1, shapeType: 'rect', fillColor: '#3a7bd5' },
+  ctxTargetFrame: 0,
+  playTimer: null,
+  currentStroke: null,
+  shapeStart: null,
+  textEdit: null,
+  mouse: { x: 0, y: 0 },
+  dragObj: null,
+  dragStart: null,
+  resizeDrag: null,
+  projectName: 'Untitled Project',
+  selectionRect: null,
+};
+
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+const onionCanvas = document.getElementById('onion-canvas');
+const octx = onionCanvas.getContext('2d');
+
+function initCanvas() {
+  canvas.width = state.canvasW;
+  canvas.height = state.canvasH;
+  onionCanvas.width = state.canvasW;
+  onionCanvas.height = state.canvasH;
+  render();
+}
+
+// FRAME MANAGEMENT
+function createFrame(inheritFrom) {
+  return {
+    objects: [],
+    thumbnail: null,
+    bgColor: inheritFrom ? inheritFrom.bgColor : state.bgColor,
+    bgImage: inheritFrom ? (inheritFrom.bgImage || null) : null,
+  };
+}
+
+function addFrame(afterIdx) {
+  saveUndo();
+  const idx = (afterIdx !== undefined) ? afterIdx + 1 : state.frames.length;
+  const prevIdx = Math.max(0, idx - 1);
+  const newFrame = createFrame(state.frames[prevIdx]);
+
+  // If rig is active, copy ALL rigged objects into the new frame
+  if (state.tool === 'rig' && rigState.mode !== 'idle') {
+    const rigIds = rigState.targetObjIds.length ? rigState.targetObjIds : (rigState.targetObjId ? [rigState.targetObjId] : []);
+    const srcFrame = state.frames[prevIdx];
+    if (srcFrame && rigIds.length) {
+      for (const id of rigIds) {
+        const srcObj = srcFrame.objects.find(o => o.id === id);
+        if (srcObj && !newFrame.objects.find(o => o.id === id)) {
+          newFrame.objects.push(cloneFrameObject(srcObj));
+        }
+      }
+    }
+  }
+
+  state.frames.splice(idx, 0, newFrame);
+  state.currentFrame = Math.min(idx, state.frames.length - 1);
+  markDirty();
+  updateAll();
+  // Re-sync rig selection after updateAll resets selectedObjects
+  if (state.tool === 'rig' && rigState.mode !== 'idle') {
+    const rigIds = rigState.targetObjIds.length ? rigState.targetObjIds : (rigState.targetObjId ? [rigState.targetObjId] : []);
+    if (rigIds.length) {
+      state.selectedObjects = [...rigIds];
+      render();
+    }
+  }
+}
+
+// Deep-clone a single frame object, safely handling non-serializable types
+// (HTMLImageElement for imported images; fill objects are now plain records)
+function cloneFrameObject(obj) {
+  const c = {};
+  for (const key of Object.keys(obj)) {
+    const v = obj[key];
+    if (key === '_img' || key === '_offscreen') {
+      continue; // skip non-serializable DOM nodes; re-created below
+    } else if (key === 'imageData' || key === '_imageDataArray') {
+      continue; // legacy fields — new fill objects don't have these
+    } else if (key === 'points' && Array.isArray(v)) {
+      c[key] = v.map(p => ({ x: p.x, y: p.y }));
+    } else if (key === 'rig' && v && typeof v === 'object') {
+      c[key] = JSON.parse(JSON.stringify(v));
+    } else if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+      c[key] = Object.assign({}, v);
+    } else if (Array.isArray(v)) {
+      c[key] = v.slice();
+    } else {
+      c[key] = v;
+    }
+  }
+  // Re-create _img from src for image objects
+  if (c.type === 'image' && c.src) {
+    const img = new Image();
+    img.src = c.src;
+    c._img = img;
+  }
+  return c;
+}
+
+function cloneFrame(frame) {
+  return {
+    objects: frame.objects.map(cloneFrameObject),
+    thumbnail: null,
+    bgColor: frame.bgColor || null,
+    bgImage: frame.bgImage || null,
+    _bgImg: frame._bgImg || null, // shared ref is fine (read-only)
+    isMasterSymbol: frame.isMasterSymbol || false,
+    instanceOf: frame.instanceOf || undefined,
+    symbolId: frame.symbolId || undefined,
+    _mouthId: frame._mouthId || undefined,
+  };
+}
+
+function duplicateFrame(idx) {
+  saveUndo();
+  const src = idx !== undefined ? idx : state.currentFrame;
+  const clone = cloneFrame(state.frames[src]);
+  state.frames.splice(src + 1, 0, clone);
+  state.currentFrame = src + 1;
+  markDirty();
+  updateAll();
+}
+
+function deleteFrame(idx) {
+  if (state.frames.length <= 1) return;
+  saveUndo();
+  const target = idx !== undefined ? idx : state.currentFrame;
+  state.frames.splice(target, 1);
+  state.currentFrame = Math.max(0, Math.min(state.currentFrame, state.frames.length - 1));
+  markDirty();
+  updateAll();
+}
+
+function clearFrame(idx) {
+  saveUndo();
+  const target = idx !== undefined ? idx : state.currentFrame;
+  state.frames[target].objects = [];
+  markDirty();
+  updateAll();
+}
+
+function goToFrame(n) {
+  const prevFrame = state.currentFrame;
+  const targetFrame = Math.max(0, Math.min(n, state.frames.length - 1));
+
+  // If rig tool is active and we have rigged objects, propagate them to the target frame
+  if (state.tool === 'rig' && rigState.mode !== 'idle') {
+    const rigIds = rigState.targetObjIds.length ? rigState.targetObjIds : (rigState.targetObjId ? [rigState.targetObjId] : []);
+    const srcFrame = state.frames[prevFrame];
+    if (srcFrame && rigIds.length) {
+      const destFrame = state.frames[targetFrame];
+      if (destFrame) {
+        for (const id of rigIds) {
+          const srcObj = srcFrame.objects.find(o => o.id === id);
+          if (!srcObj) continue;
+          const existing = destFrame.objects.find(o => o.id === id);
+          if (!existing) {
+            destFrame.objects.push(cloneFrameObject(srcObj));
+          } else {
+            existing.rig = JSON.parse(JSON.stringify(rigState.rig));
+          }
+        }
+      }
+    }
+  }
+
+  state.currentFrame = targetFrame;
+  // Keep the rigged object selected across frames
+  if (!(state.tool === 'rig' && rigState.targetObjId)) {
+    state.selectedObjects = [];
+  }
+  renderOnionSkin();
+  render();
+  updateFrameStrip();
+  updateTimeline();
+  updateObjectList();
+  document.getElementById('cur-frame-num').textContent = state.currentFrame + 1;
+
+  // Re-sync rigState to the object in the new frame
+  if (state.tool === 'rig' && rigState.mode !== 'idle') {
+    const rigIds = rigState.targetObjIds.length ? rigState.targetObjIds : (rigState.targetObjId ? [rigState.targetObjId] : []);
+    if (rigIds.length) {
+      const newFrameData = state.frames[state.currentFrame];
+      const primaryId = rigState.targetObjId || rigIds[0];
+      const newObj = newFrameData ? newFrameData.objects.find(o => o.id === primaryId) : null;
+      if (newObj && newObj.rig) {
+        rigState.rig = JSON.parse(JSON.stringify(newObj.rig));
+      }
+      state.selectedObjects = [...rigIds];
+      render();
+    }
+  }
+}
+
+// UNDO/REDO
+function saveUndo() {
+  const snap = { frames: state.frames.map(cloneFrame), currentFrame: state.currentFrame };
+  state.undoStack.push(snap);
+  if (state.undoStack.length > 50) state.undoStack.shift();
+  state.redoStack = [];
+}
+
+function undo() {
+  if (!state.undoStack.length) return;
+  const cur = { frames: state.frames.map(cloneFrame), currentFrame: state.currentFrame };
+  state.redoStack.push(cur);
+  const snap = state.undoStack.pop();
+  state.frames = snap.frames;
+  state.currentFrame = snap.currentFrame;
+  state.selectedObjects = [];
+  markDirty();
+  updateAll();
+}
+
+function redo() {
+  if (!state.redoStack.length) return;
+  const cur = { frames: state.frames.map(cloneFrame), currentFrame: state.currentFrame };
+  state.undoStack.push(cur);
+  const snap = state.redoStack.pop();
+  state.frames = snap.frames;
+  state.currentFrame = snap.currentFrame;
+  state.selectedObjects = [];
+  markDirty();
+  updateAll();
+}
+
+// RENDER
+function render() {
+  const frame = state.frames[state.currentFrame];
+  if (!frame) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Background — per frame
+  const frameBg = frame.bgColor || state.bgColor;
+  ctx.fillStyle = frameBg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (frame.bgImage && frame._bgImg) {
+    ctx.drawImage(frame._bgImg, 0, 0, canvas.width, canvas.height);
+  }
+  drawCheckerboard();
+  // Draw objects
+  for (const obj of frame.objects) {
+    if (!obj.visible) continue;
+    drawObject(ctx, obj);
+  }
+  // Selection handles
+  for (const obj of state.selectedObjects) {
+    const realObj = frame.objects.find(o => o.id === obj);
+    if (realObj) drawSelection(ctx, realObj);
+  }
+  // Live preview while drawing shapes
+  if (state.shapeStart && state.tool === 'shape') {
+    drawShapePreview(ctx);
+  }
+  // Rig overlay — only when rig tool is active
+  if (state.tool === 'rig' && rigState.mode !== 'idle') drawRigOverlay(ctx);
+  updateThumbnail(state.currentFrame);
+}
+
+function drawCheckerboard() {
+  const sz = 16;
+  for (let y = 0; y < canvas.height; y += sz) {
+    for (let x = 0; x < canvas.width; x += sz) {
+      ctx.fillStyle = ((x / sz + y / sz) % 2 === 0) ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0)';
+      ctx.fillRect(x, y, sz, sz);
+    }
+  }
+}
+
+function drawObject(c, obj) {
+  c.save();
+  c.globalAlpha = obj.opacity !== undefined ? obj.opacity : 1;
+  if (obj.type === 'stroke') {
+    if (!obj.points || obj.points.length < 2) {
+      if (obj.points && obj.points.length === 1) {
+        c.beginPath();
+        c.arc(obj.points[0].x, obj.points[0].y, obj.size / 2, 0, Math.PI * 2);
+        c.fillStyle = obj.color;
+        c.fill();
+      }
+    } else {
+      c.beginPath();
+      c.moveTo(obj.points[0].x, obj.points[0].y);
+      for (let i = 1; i < obj.points.length; i++) {
+        c.lineTo(obj.points[i].x, obj.points[i].y);
+      }
+      c.strokeStyle = obj.color;
+      c.lineWidth = obj.size;
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      c.stroke();
+    }
+  } else if (obj.type === 'erase') {
+    if (obj.points && obj.points.length >= 2) {
+      c.save();
+      c.globalCompositeOperation = 'destination-out';
+      c.beginPath();
+      c.moveTo(obj.points[0].x, obj.points[0].y);
+      for (let i = 1; i < obj.points.length; i++) c.lineTo(obj.points[i].x, obj.points[i].y);
+      c.strokeStyle = 'rgba(0,0,0,1)';
+      c.lineWidth = obj.size;
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      c.stroke();
+      c.restore();
+    }
+  } else if (obj.type === 'shape') {
+    c.save();
+    c.translate(obj.x + obj.w / 2, obj.y + obj.h / 2);
+    c.rotate((obj.rotation || 0) * Math.PI / 180);
+    c.translate(-obj.w / 2, -obj.h / 2);
+    c.fillStyle = obj.fillColor || 'transparent';
+    c.strokeStyle = obj.color;
+    c.lineWidth = obj.size || 2;
+    if (obj.shape === 'rect') {
+      c.fillRect(0, 0, obj.w, obj.h);
+      c.strokeRect(0, 0, obj.w, obj.h);
+    } else if (obj.shape === 'ellipse') {
+      c.beginPath();
+      c.ellipse(obj.w / 2, obj.h / 2, Math.abs(obj.w / 2), Math.abs(obj.h / 2), 0, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+    } else if (obj.shape === 'line') {
+      c.beginPath();
+      c.moveTo(0, obj.h / 2);
+      c.lineTo(obj.w, obj.h / 2);
+      c.stroke();
+    } else if (obj.shape === 'triangle') {
+      c.beginPath();
+      c.moveTo(obj.w / 2, 0);
+      c.lineTo(obj.w, obj.h);
+      c.lineTo(0, obj.h);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+    c.restore();
+  } else if (obj.type === 'text') {
+    c.font = `${obj.bold ? 'bold ' : ''}${obj.italic ? 'italic ' : ''}${obj.size || 24}px ${obj.font || 'sans-serif'}`;
+    c.fillStyle = obj.color;
+    c.fillText(obj.text, obj.x, obj.y);
+  } else if (obj.type === 'image') {
+    if (obj._img) {
+      c.save();
+      c.translate(obj.x + obj.w / 2, obj.y + obj.h / 2);
+      c.rotate((obj.rotation || 0) * Math.PI / 180);
+      c.drawImage(obj._img, -obj.w / 2, -obj.h / 2, obj.w, obj.h);
+      c.restore();
+    }
+  } else if (obj.type === 'fill') {
+    // Re-execute the fill against all objects that appear below this one in the layer order.
+    // This is cheap (no giant arrays stored) and correct across any number of frames.
+    const frame = state.frames[state.currentFrame];
+    if (!frame) { c.restore(); return; }
+    const objIdx = frame.objects.indexOf(obj);
+    const below = objIdx > 0 ? frame.objects.slice(0, objIdx) : [];
+    const bgColor = frame.bgColor || state.bgColor;
+    const bgImg   = (frame.bgImage && frame._bgImg) ? frame._bgImg : null;
+    executeFillRecord(obj, c, canvas.width, canvas.height, below, frame, bgColor, bgImg);
+  }
+  c.restore();
+}
+
+function drawSelection(c, obj) {
+  const bbox = getObjBBox(obj);
+  if (!bbox) return;
+  c.save();
+  c.strokeStyle = '#00d4ff';
+  c.lineWidth = 1.5;
+  c.setLineDash([4, 3]);
+  c.strokeRect(bbox.x - 3, bbox.y - 3, bbox.w + 6, bbox.h + 6);
+  c.setLineDash([]);
+  // 8 resize handles + 1 rotation handle above
+  const handles = getSelectionHandles(bbox);
+  c.fillStyle = '#00d4ff';
+  for (const h of handles) {
+    if (h.type === 'rotate') {
+      // rotation handle — larger circle above top-center
+      c.beginPath();
+      c.arc(h.x, h.y, 8, 0, Math.PI*2);
+      c.fillStyle = '#fff';
+      c.fill();
+      c.strokeStyle = '#00d4ff';
+      c.lineWidth = 2;
+      c.stroke();
+      // rotation arrows inside
+      c.strokeStyle = '#00d4ff';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.arc(h.x, h.y, 4, -Math.PI*0.8, Math.PI*0.8);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(h.x + 4*Math.cos(Math.PI*0.8) - 3, h.y + 4*Math.sin(Math.PI*0.8));
+      c.lineTo(h.x + 4*Math.cos(Math.PI*0.8), h.y + 4*Math.sin(Math.PI*0.8));
+      c.lineTo(h.x + 4*Math.cos(Math.PI*0.8), h.y + 4*Math.sin(Math.PI*0.8) - 3);
+      c.stroke();
+      // line connecting to bbox
+      c.beginPath();
+      c.moveTo(bbox.x + bbox.w/2, bbox.y - 3);
+      c.lineTo(h.x, h.y + 8);
+      c.strokeStyle = 'rgba(0,212,255,0.5)';
+      c.lineWidth = 1;
+      c.stroke();
+    } else {
+      c.fillStyle = '#00d4ff';
+      c.fillRect(h.x - 4, h.y - 4, 8, 8);
+    }
+  }
+  c.restore();
+}
+
+function getSelectionHandles(bbox) {
+  const {x, y, w, h} = bbox;
+  return [
+    {type:'nw', x:x-3,       y:y-3,       cursor:'nw-resize'},
+    {type:'n',  x:x+w/2,     y:y-3,       cursor:'n-resize'},
+    {type:'ne', x:x+w+3,     y:y-3,       cursor:'ne-resize'},
+    {type:'e',  x:x+w+3,     y:y+h/2,     cursor:'e-resize'},
+    {type:'se', x:x+w+3,     y:y+h+3,     cursor:'se-resize'},
+    {type:'s',  x:x+w/2,     y:y+h+3,     cursor:'s-resize'},
+    {type:'sw', x:x-3,       y:y+h+3,     cursor:'sw-resize'},
+    {type:'w',  x:x-3,       y:y+h/2,     cursor:'w-resize'},
+    {type:'rotate', x:x+w/2, y:y-28,      cursor:'grab'},
+  ];
+}
+
+function getHandleAtPos(obj, pos) {
+  const bbox = getObjBBox(obj);
+  if (!bbox) return null;
+  const handles = getSelectionHandles(bbox);
+  for (const h of handles) {
+    const r = h.type === 'rotate' ? 12 : 7;
+    if (Math.abs(pos.x - h.x) <= r && Math.abs(pos.y - h.y) <= r) return h;
+  }
+  return null;
+}
+
+function drawShapePreview(c) {
+  const { x: sx, y: sy } = state.shapeStart;
+  const { x: mx, y: my } = state.mouse;
+  const w = mx - sx, h = my - sy;
+  const tp = state.toolProps;
+  c.save();
+  c.globalAlpha = tp.opacity;
+  c.strokeStyle = tp.color;
+  c.fillStyle = tp.fillColor || 'transparent';
+  c.lineWidth = tp.size;
+  c.setLineDash([4, 4]);
+  if (tp.shapeType === 'rect') { c.strokeRect(sx, sy, w, h); c.fillRect(sx, sy, w, h); }
+  else if (tp.shapeType === 'ellipse') {
+    c.beginPath();
+    c.ellipse(sx + w / 2, sy + h / 2, Math.abs(w / 2), Math.abs(h / 2), 0, 0, Math.PI * 2);
+    c.fill(); c.stroke();
+  } else if (tp.shapeType === 'line') {
+    c.beginPath(); c.moveTo(sx, sy); c.lineTo(mx, my); c.stroke();
+  } else if (tp.shapeType === 'triangle') {
+    c.beginPath();
+    c.moveTo(sx + w / 2, sy); c.lineTo(sx + w, sy + h); c.lineTo(sx, sy + h);
+    c.closePath(); c.fill(); c.stroke();
+  }
+  c.setLineDash([]);
+  c.restore();
+}
+
+// ONION SKIN — renders onto transparent overlay canvas; bg is on main canvas
+function renderOnionSkin() {
+  octx.clearRect(0, 0, onionCanvas.width, onionCanvas.height);
+  if (!state.onionSkin || state.mode !== 'animate') return;
+  const prev = state.onionPrev, next = state.onionNext;
+  for (let i = prev; i >= 1; i--) {
+    const fi = state.currentFrame - i;
+    if (fi < 0) continue;
+    const alpha = 0.5 * (1 - (i - 1) * 0.2);
+    octx.save();
+    octx.globalAlpha = alpha;
+    for (const obj of state.frames[fi].objects) {
+      if (!obj.visible) continue;
+      const clone = Object.assign({}, obj);
+      if (clone.type === 'stroke') clone.color = 'rgba(255,100,100,0.8)';
+      drawObject(octx, clone);
+    }
+    octx.restore();
+  }
+  for (let i = 1; i <= next; i++) {
+    const fi = state.currentFrame + i;
+    if (fi >= state.frames.length) continue;
+    const alpha = 0.4 * (1 - (i - 1) * 0.2);
+    octx.save();
+    octx.globalAlpha = alpha;
+    for (const obj of state.frames[fi].objects) {
+      if (!obj.visible) continue;
+      const clone = Object.assign({}, obj);
+      if (clone.type === 'stroke') clone.color = 'rgba(100,255,150,0.8)';
+      drawObject(octx, clone);
+    }
+    octx.restore();
+  }
+}
+
+// THUMBNAILS
+function updateThumbnail(idx) {
+  const tCanvas = document.createElement('canvas');
+  tCanvas.width = 96; tCanvas.height = 64;
+  const tc = tCanvas.getContext('2d');
+  const scale = Math.min(96 / state.canvasW, 64 / state.canvasH);
+  tc.scale(scale, scale);
+  const f = state.frames[idx];
+  tc.fillStyle = f.bgColor || state.bgColor;
+  tc.fillRect(0, 0, state.canvasW, state.canvasH);
+  if (f.bgImage && f._bgImg) tc.drawImage(f._bgImg, 0, 0, state.canvasW, state.canvasH);
+  for (const obj of f.objects) {
+    if (!obj.visible) continue;
+    drawObject(tc, obj);
+  }
+  f.thumbnail = tCanvas.toDataURL();
+  updateFrameThumb(idx);
+}
+
+function updateFrameThumb(idx) {
+  const el = document.querySelector(`[data-frame-idx="${idx}"] canvas`);
+  if (!el) return;
+  const img = new Image();
+  img.onload = () => { const c = el.getContext('2d'); c.clearRect(0,0,el.width,el.height); c.drawImage(img, 0, 0, el.width, el.height); };
+  if (state.frames[idx].thumbnail) img.src = state.frames[idx].thumbnail;
+
+  const tlEl = document.querySelector(`[data-tl-idx="${idx}"] canvas`);
+  if (tlEl) {
+    const img2 = new Image();
+    img2.onload = () => { const c2 = tlEl.getContext('2d'); c2.clearRect(0,0,tlEl.width,tlEl.height); c2.drawImage(img2, 0, 0, tlEl.width, tlEl.height); };
+    if (state.frames[idx].thumbnail) img2.src = state.frames[idx].thumbnail;
+  }
+}
+
+// CANVAS MOUSE - map screen coords to canvas logical coords
+// The wrapper is CSS-scaled, so rect already reflects visual size.
+// We scale by (logical / visual) to get the true canvas coordinate.
+function getCanvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * (canvas.width  / rect.width),
+    y: (e.clientY - rect.top)  * (canvas.height / rect.height)
+  };
+}
+
+canvas.addEventListener('mousedown', onMouseDown);
+canvas.addEventListener('mousemove', onMouseMove);
+// Listen for mouseup on window so releasing outside canvas still ends stroke
+window.addEventListener('mouseup', onMouseUp);
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+function onMouseDown(e) {
+  if (state.isPlaying) return;
+  const pos = getCanvasPos(e);
+  state.mouse = pos;
+  state.isDrawing = true;
+
+  if (state.tool === 'pen' || state.tool === 'eraser') {
+    saveUndo();
+    const obj = {
+      id: uid(), type: state.tool === 'eraser' ? 'erase' : 'stroke',
+      color: state.toolProps.color, size: state.toolProps.size,
+      opacity: state.toolProps.opacity, visible: true, locked: false,
+      name: state.tool === 'eraser' ? 'Erase' : 'Stroke',
+      points: [{ x: pos.x, y: pos.y }]
+    };
+    state.currentStroke = obj;
+    state.frames[state.currentFrame].objects.push(obj);
+  } else if (state.tool === 'shape') {
+    state.shapeStart = { x: pos.x, y: pos.y };
+  } else if (state.tool === 'select') {
+    const frame = state.frames[state.currentFrame];
+    // First: check if clicking a handle on a selected object
+    if (state.selectedObjects.length > 0) {
+      const selObj = frame.objects.find(o => o.id === state.selectedObjects[0]);
+      if (selObj) {
+        const handle = getHandleAtPos(selObj, pos);
+        if (handle) {
+          saveUndo();
+          const bbox = getObjBBox(selObj);
+          state.resizeDrag = {
+            objId: selObj.id,
+            handle: handle.type,
+            startPos: pos,
+            origBBox: { ...bbox },
+            origObj: JSON.parse(JSON.stringify(selObj)),
+            origRotation: selObj.rotation || 0,
+          };
+          state.isDrawing = true;
+          return;
+        }
+      }
+    }
+    let hit = null;
+    for (let i = frame.objects.length - 1; i >= 0; i--) {
+      const obj = frame.objects[i];
+      if (obj.locked || !obj.visible) continue;
+      if (hitTest(obj, pos.x, pos.y)) { hit = obj; break; }
+    }
+    if (hit) {
+      if (!state.selectedObjects.includes(hit.id)) {
+        state.selectedObjects = e.shiftKey ? [...state.selectedObjects, hit.id] : [hit.id];
+      }
+      // Store deep snapshot of all points/positions for drag
+      state.dragObj = { objs: state.selectedObjects.slice(), startPos: pos, origSnap: {} };
+      for (const id of state.selectedObjects) {
+        const o = frame.objects.find(x => x.id === id);
+        if (!o) continue;
+        if (o.type === 'stroke' || o.type === 'erase') {
+          state.dragObj.origSnap[id] = { points: o.points.map(p => ({ x: p.x, y: p.y })) };
+        } else {
+          state.dragObj.origSnap[id] = { x: o.x || 0, y: o.y || 0 };
+        }
+      }
+    } else {
+      state.selectedObjects = [];
+      state.dragObj = null;
+    }
+    updateObjectList();
+    render();
+  } else if (state.tool === 'rig') {
+    rigMouseDown(e, pos);
+  } else if (state.tool === 'paint') {
+    saveUndo();
+    const frame = state.frames[state.currentFrame];
+    const color1  = document.getElementById('paint-color1')?.value  || state.toolProps.color;
+    const color2  = document.getElementById('paint-color2')?.value  || '#000000';
+    const tolerance  = parseInt(document.getElementById('fill-tolerance')?.value  ?? 32);
+    const smoothPx   = parseInt(document.getElementById('fill-smooth')?.value    ?? 1);
+    const fillOpacity = parseInt(document.getElementById('fill-opacity')?.value   ?? 100) / 100;
+    const fillMode   = state.fillMode || 'flat';
+
+    // Store a lightweight record — no pixel data, recomputed at render time
+    const obj = {
+      id: uid(), type: 'fill',
+      name: fillMode === 'gradient' ? 'Gradient Fill' : 'Fill',
+      visible: true, locked: false, opacity: 1,
+      color: color1, color2,
+      fillX: pos.x, fillY: pos.y,
+      tolerance, smoothPx, fillOpacity,
+      fillMode,
+    };
+    frame.objects.push(obj);
+    markDirty();
+    updateAll();
+  } else if (state.tool === 'text') {
+    const text = prompt('Enter text:');
+    if (text) {
+      saveUndo();
+      const obj = {
+        id: uid(), type: 'text', text,
+        x: pos.x, y: pos.y,
+        color: state.toolProps.color,
+        size: 24, font: 'sans-serif', bold: false, italic: false,
+        visible: true, locked: false, name: 'Text', opacity: state.toolProps.opacity
+      };
+      state.frames[state.currentFrame].objects.push(obj);
+      markDirty();
+      updateAll();
+    }
+  }
+}
+
+function onMouseMove(e) {
+  const pos = getCanvasPos(e);
+  state.mouse = pos;
+  document.getElementById('canvas-info').textContent = `${Math.round(pos.x)}, ${Math.round(pos.y)}`;
+
+  // Update cursor for resize handles
+  if (state.tool === 'select' && !state.isDrawing) {
+    const frame = state.frames[state.currentFrame];
+    if (state.selectedObjects.length > 0) {
+      const selObj = frame.objects.find(o => o.id === state.selectedObjects[0]);
+      if (selObj) {
+        const handle = getHandleAtPos(selObj, pos);
+        canvas.style.cursor = handle ? handle.cursor : 'default';
+      }
+    }
+  }
+
+  if (!state.isDrawing) return;
+
+  if ((state.tool === 'pen' || state.tool === 'eraser') && state.currentStroke) {
+    state.currentStroke.points.push({ x: pos.x, y: pos.y });
+    render();
+  } else if (state.tool === 'shape' && state.shapeStart) {
+    render();
+  } else if (state.tool === 'select' && state.resizeDrag) {
+    applyResizeDrag(pos, e.shiftKey);
+    render();
+  } else if (state.tool === 'select' && state.dragObj) {
+    const dx = pos.x - state.dragObj.startPos.x;
+    const dy = pos.y - state.dragObj.startPos.y;
+    const frame = state.frames[state.currentFrame];
+    for (const id of state.dragObj.objs) {
+      const o = frame.objects.find(x => x.id === id);
+      if (!o) continue;
+      const snap = state.dragObj.origSnap[id];
+      if ((o.type === 'stroke' || o.type === 'erase') && snap.points) {
+        o.points = snap.points.map(p => ({ x: p.x + dx, y: p.y + dy }));
+      } else {
+        o.x = snap.x + dx;
+        o.y = snap.y + dy;
+      }
+    }
+    render();
+  } else if (state.tool === 'rig') {
+    rigMouseMove(e, pos);
+  }
+}
+
+function onMouseUp(e) {
+  if (!state.isDrawing) return;
+  state.isDrawing = false;
+
+  if ((state.tool === 'pen' || state.tool === 'eraser') && state.currentStroke) {
+    state.currentStroke = null;
+    markDirty();
+    updateObjectList();
+    updateThumbnail(state.currentFrame);
+    updateFrameStrip();
+    updateTimeline();
+  } else if (state.tool === 'shape' && state.shapeStart) {
+    const pos = getCanvasPos(e);
+    const sx = state.shapeStart.x, sy = state.shapeStart.y;
+    const w = pos.x - sx, h = pos.y - sy;
+    if (Math.abs(w) > 3 || Math.abs(h) > 3) {
+      saveUndo();
+      const obj = {
+        id: uid(), type: 'shape', shape: state.toolProps.shapeType,
+        x: Math.min(sx, pos.x), y: Math.min(sy, pos.y),
+        w: Math.abs(w), h: Math.abs(h),
+        color: state.toolProps.color, fillColor: state.toolProps.fillColor,
+        size: state.toolProps.size, rotation: 0,
+        opacity: state.toolProps.opacity, visible: true, locked: false,
+        name: state.toolProps.shapeType.charAt(0).toUpperCase() + state.toolProps.shapeType.slice(1)
+      };
+      state.frames[state.currentFrame].objects.push(obj);
+      markDirty();
+      updateAll();
+    }
+    state.shapeStart = null;
+    render();
+  } else if (state.tool === 'select' && state.resizeDrag) {
+    state.resizeDrag = null;
+    markDirty();
+    updateThumbnail(state.currentFrame);
+    updateFrameStrip();
+    updateTimeline();
+    render();
+  } else if (state.tool === 'select' && state.dragObj) {
+    if (state.dragObj.objs.length) { saveUndo(); markDirty(); }
+    state.dragObj = null;
+    render();
+  } else if (state.tool === 'rig') {
+    rigMouseUp(e, getCanvasPos(e));
+  }
+}
+
+// APPLY RESIZE DRAG
+function applyResizeDrag(pos, shiftKey) {
+  const rd = state.resizeDrag;
+  if (!rd) return;
+  const frame = state.frames[state.currentFrame];
+  const obj = frame.objects.find(o => o.id === rd.objId);
+  if (!obj) return;
+
+  const ob = rd.origBBox;
+  const dx = pos.x - rd.startPos.x;
+  const dy = pos.y - rd.startPos.y;
+  const h = rd.handle;
+
+  if (h === 'rotate') {
+    // Rotation: compute angle from bbox center to cursor
+    const cx = ob.x + ob.w/2, cy = ob.y + ob.h/2;
+    const angle = Math.atan2(pos.y - cy, pos.x - cx) * 180 / Math.PI + 90;
+    if (obj.rotation !== undefined) {
+      obj.rotation = angle;
+      // Update rig joint positions if object has a rig
+      _updateRigForRotatedObject(obj, ob, angle, (rd.origRotation || 0));
+    }
+    return;
+  }
+
+  // Corner/side resize
+  let newX = ob.x, newY = ob.y, newW = ob.w, newH = ob.h;
+
+  // Determine anchor (opposite corner stays fixed)
+  const isCorner = h.length === 2 && !h.includes('n') || (h.includes('n') && h.length === 2);
+  const proportional = shiftKey && h !== 'n' && h !== 's' && h !== 'e' && h !== 'w';
+
+  if (h.includes('e')) newW = Math.max(8, ob.w + dx);
+  if (h.includes('s')) newH = Math.max(8, ob.h + dy);
+  if (h.includes('w')) { newX = ob.x + dx; newW = Math.max(8, ob.w - dx); }
+  if (h.includes('n')) { newY = ob.y + dy; newH = Math.max(8, ob.h - dy); }
+
+  // Proportional scale for corners (Shift key or corner drag)
+  if (proportional || (h.length === 2 && shiftKey)) {
+    const aspect = ob.w / ob.h;
+    if (h.includes('e') || h.includes('w')) {
+      newH = newW / aspect;
+      if (h.includes('n')) newY = ob.y + ob.h - newH;
+    } else {
+      newW = newH * aspect;
+      if (h.includes('w')) newX = ob.x + ob.w - newW;
+    }
+  }
+
+  // Flip detection: if width/height goes negative, flip
+  let flipX = false, flipY = false;
+  if (newW < 0) { flipX = true; newX = newX + newW; newW = -newW; }
+  if (newH < 0) { flipY = true; newY = newY + newH; newH = -newH; }
+
+  const scaleX = (flipX ? -1 : 1) * newW / ob.w;
+  const scaleY = (flipY ? -1 : 1) * newH / ob.h;
+
+  if (obj.type === 'shape' || obj.type === 'image') {
+    obj.x = newX; obj.y = newY; obj.w = newW; obj.h = newH;
+    if (flipX && obj.type === 'image') obj._flipX = !(obj._flipX);
+    if (flipY && obj.type === 'image') obj._flipY = !(obj._flipY);
+    // Scale rig skeleton if rig is present
+    if (obj.rig) {
+      _scaleRigForObject(obj, ob, newX, newY, newW, newH);
+    }
+  } else if (obj.type === 'stroke' || obj.type === 'erase') {
+    const origPts = rd.origObj.points;
+    if (flipX || flipY) {
+      // flip points around original bbox center when flipping
+      obj.points = origPts.map(p => {
+        let px = flipX ? (ob.x + ob.w - (p.x - ob.x)) : p.x;
+        let py = flipY ? (ob.y + ob.h - (p.y - ob.y)) : p.y;
+        return { x: newX + (px - ob.x) * (newW / ob.w), y: newY + (py - ob.y) * (newH / ob.h) };
+      });
+    } else {
+      obj.points = origPts.map(p => ({
+        x: newX + (p.x - ob.x) * scaleX,
+        y: newY + (p.y - ob.y) * scaleY
+      }));
+    }
+    if (obj.rig) {
+      _scaleRigForObject(obj, ob, newX, newY, newW, newH);
+    }
+  }
+}
+
+function _scaleRigForObject(obj, origBBox, newX, newY, newW, newH) {
+  if (!obj.rig) return;
+  const scX = newW / origBBox.w, scY = newH / origBBox.h;
+  obj.rig.root.x = newX + (obj.rig.root.x - origBBox.x) * scX;
+  obj.rig.root.y = newY + (obj.rig.root.y - origBBox.y) * scY;
+  if (obj.rig.nodes) {
+    obj.rig.nodes.forEach(n => {
+      n.x = newX + (n.x - origBBox.x) * scX;
+      n.y = newY + (n.y - origBBox.y) * scY;
+    });
+  }
+  obj.rig.bindData = computeBindData(obj.rig, obj);
+  if (rigState.targetObjId === obj.id || rigState.targetObjIds.includes(obj.id)) {
+    rigState.rig = JSON.parse(JSON.stringify(obj.rig));
+  }
+}
+
+function _updateRigForRotatedObject(obj, origBBox, newAngleDeg, origAngleDeg) {
+  if (!obj.rig) return;
+  const cx = origBBox.x + origBBox.w / 2;
+  const cy = origBBox.y + origBBox.h / 2;
+  const dAngle = (newAngleDeg - origAngleDeg) * Math.PI / 180;
+  const cos = Math.cos(dAngle), sin = Math.sin(dAngle);
+  function rotPt(p) {
+    const rx = p.x - cx, ry = p.y - cy;
+    return { x: cx + rx * cos - ry * sin, y: cy + rx * sin + ry * cos };
+  }
+  const nr = rotPt(obj.rig.root);
+  obj.rig.root.x = nr.x; obj.rig.root.y = nr.y;
+  if (obj.rig.nodes) {
+    obj.rig.nodes.forEach(n => { const np = rotPt(n); n.x = np.x; n.y = np.y; });
+  }
+  obj.rig.bindData = computeBindData(obj.rig, obj);
+  if (rigState.targetObjId === obj.id || rigState.targetObjIds.includes(obj.id)) {
+    rigState.rig = JSON.parse(JSON.stringify(obj.rig));
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SOUND MODE
+// ═══════════════════════════════════════════════════════════════════════════
+const soundState = {
+  audioBuffer: null,
+  audioCtx: null,
+  source: null,
+  isPlaying: false,
+  startTime: 0,
+  startFrame: 0,
+  waveformData: null,
+  currentFrame: 0,
+};
+
+const MOUTH_PHONEMES = [
+  { id:'rest',  label:'Rest / Silence',   phonemes:'silence' },
+  { id:'mbp',   label:'M, B, P',          phonemes:'/m/ /b/ /p/' },
+  { id:'fv',    label:'F, V',             phonemes:'/f/ /v/' },
+  { id:'th',    label:'TH',               phonemes:'/θ/ /ð/' },
+  { id:'cdgkn', label:'C, D, G, K, N, S', phonemes:'/k/ /g/ /s/' },
+  { id:'r',     label:'R',                phonemes:'/r/' },
+  { id:'ee',    label:'EE, I (beat)',      phonemes:'/iː/' },
+  { id:'aa',    label:'AA (cat)',          phonemes:'/æ/' },
+  { id:'oh',    label:'OH (boat)',         phonemes:'/oʊ/' },
+  { id:'oo',    label:'OO (boot)',         phonemes:'/uː/' },
+  { id:'er',    label:'ER (bird)',         phonemes:'/ɜː/' },
+  { id:'woo',   label:'W, OOH (wow)',      phonemes:'/w/ /uː/' },
+];
+
+// Storage for drawn mouth shapes (ImageData)
+const mouthDrawings = {};
+const mouthCanvases = {};
+
+function initSoundMode() {
+  soundState.currentFrame = state.currentFrame;
+  // Size the preview canvas
+  const area = document.getElementById('sound-canvas-area');
+  const sc = document.getElementById('sound-preview-canvas');
+  const aspect = state.canvasW / state.canvasH;
+  const maxW = area.clientWidth - 40;
+  const maxH = area.clientHeight - 40;
+  let w = maxW, h = w / aspect;
+  if (h > maxH) { h = maxH; w = h * aspect; }
+  sc.width = state.canvasW;
+  sc.height = state.canvasH;
+  sc.style.width = Math.round(w) + 'px';
+  sc.style.height = Math.round(h) + 'px';
+
+  buildSoundFrameStrip();
+  renderSoundPreview();
+  updateSoundUI();
+}
+
+function buildSoundFrameStrip() {
+  const strip = document.getElementById('sound-frame-strip');
+  if (!strip) return;
+  strip.innerHTML = '';
+
+  state.frames.forEach((f, i) => {
+    const col = document.createElement('div');
+    col.className = 'sf-col' + (i === soundState.currentFrame ? ' sf-active' : '');
+    col.id = 'sf-col-' + i;
+    col.title = 'Frame ' + (i + 1);
+    col.onclick = () => soundGoToFrame(i);
+
+    // Thumbnail canvas
+    const thumb = document.createElement('canvas');
+    thumb.className = 'sf-thumb';
+    thumb.width = 64;
+    thumb.height = 42;
+    drawSoundThumb(thumb, f);
+    col.appendChild(thumb);
+
+    // Frame number
+    const num = document.createElement('div');
+    num.className = 'sf-num';
+    num.textContent = i + 1;
+    col.appendChild(num);
+
+    // Per-frame waveform bar
+    const wave = document.createElement('div');
+    wave.className = 'sf-wave';
+    wave.id = 'sf-wave-' + i;
+    const wc = document.createElement('canvas');
+    wc.width = 64;
+    wc.height = 60;
+    wave.appendChild(wc);
+    // Mouth dot indicator
+    const dot = document.createElement('div');
+    dot.className = 'sf-mouth-dot';
+    dot.id = 'sf-dot-' + i;
+    if (f._mouthId) dot.style.display = 'block';
+    wave.appendChild(dot);
+    col.appendChild(wave);
+
+    strip.appendChild(col);
+  });
+
+  // Draw per-frame waveform segments after strip is built
+  if (soundState.waveformData) drawAllFrameWaves();
+
+  // Scroll active frame into view
+  requestAnimationFrame(() => {
+    const active = document.getElementById('sf-col-' + soundState.currentFrame);
+    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    updateSoundPlayhead();
+  });
+}
+
+function drawSoundThumb(canvas, frame) {
+  const c = canvas.getContext('2d');
+  c.fillStyle = frame.bgColor || state.bgColor;
+  c.fillRect(0, 0, canvas.width, canvas.height);
+  if (frame.thumbnail) {
+    const img = new Image();
+    img.onload = () => { c.drawImage(img, 0, 0, canvas.width, canvas.height); };
+    img.src = frame.thumbnail;
+  } else {
+    // Draw objects scaled
+    const scaleX = canvas.width / state.canvasW;
+    const scaleY = canvas.height / state.canvasH;
+    c.save();
+    c.scale(scaleX, scaleY);
+    for (const obj of frame.objects) {
+      if (!obj.visible) continue;
+      drawObject(c, obj);
+    }
+    c.restore();
+  }
+}
+
+function drawAllFrameWaves() {
+  if (!soundState.waveformData) {
+    // No audio: draw empty gray bars to still show frames
+    state.frames.forEach((f, i) => {
+      const waveDiv = document.getElementById('sf-wave-' + i);
+      if (!waveDiv) return;
+      const wc = waveDiv.querySelector('canvas');
+      if (!wc) return;
+      const wctx = wc.getContext('2d');
+      wctx.fillStyle = '#111';
+      wctx.fillRect(0, 0, wc.width, wc.height);
+      wctx.fillStyle = '#2a2a2a';
+      wctx.fillRect(4, wc.height/2 - 1, wc.width - 8, 2);
+    });
+    return;
+  }
+  const totalFrames = state.frames.length;
+  const data = soundState.waveformData;
+  state.frames.forEach((f, i) => {
+    const waveDiv = document.getElementById('sf-wave-' + i);
+    if (!waveDiv) return;
+    const wc = waveDiv.querySelector('canvas');
+    if (!wc) return;
+    const wctx = wc.getContext('2d');
+    const W = wc.width, H = wc.height;
+    wctx.fillStyle = '#0d0d0d';
+    wctx.fillRect(0, 0, W, H);
+
+    // Slice of waveform that belongs to this frame
+    const startBin = Math.floor((i / totalFrames) * data.length);
+    const endBin = Math.floor(((i + 1) / totalFrames) * data.length);
+    const slice = data.slice(startBin, endBin);
+    if (!slice.length) {
+      wctx.fillStyle = '#1a1a1a';
+      wctx.fillRect(0, 0, W, H);
+      return;
+    }
+    const barW = W / slice.length;
+    wctx.fillStyle = i === soundState.currentFrame ? '#00d4ff' : '#00a8cc';
+    for (let b = 0; b < slice.length; b++) {
+      const amp = slice[b];
+      const barH = Math.max(2, amp * H * 0.9);
+      wctx.globalAlpha = 0.6 + amp * 0.4;
+      wctx.fillRect(b * barW, (H - barH) / 2, Math.max(barW - 0.5, 0.5), barH);
+    }
+    wctx.globalAlpha = 1;
+  });
+}
+
+function refreshSoundFrameStrip() {
+  // Lighter refresh: just update active state + redraw waves
+  document.querySelectorAll('.sf-col').forEach((col, i) => {
+    col.classList.toggle('sf-active', i === soundState.currentFrame);
+  });
+  drawAllFrameWaves();
+}
+
+function renderSoundPreview() {
+  const sc = document.getElementById('sound-preview-canvas');
+  if (!sc) return;
+  const sctx = sc.getContext('2d');
+  const frame = state.frames[soundState.currentFrame];
+  if (!frame) return;
+  sctx.fillStyle = frame.bgColor || state.bgColor;
+  sctx.fillRect(0, 0, sc.width, sc.height);
+  if (frame.bgImage && frame._bgImg) sctx.drawImage(frame._bgImg, 0, 0, sc.width, sc.height);
+  for (const obj of frame.objects) {
+    if (!obj.visible) continue;
+    drawObject(sctx, obj);
+  }
+  document.getElementById('canvas-info-sound').textContent = `Frame ${soundState.currentFrame + 1}`;
+  document.getElementById('sound-frame-num').textContent = soundState.currentFrame + 1;
+}
+
+function updateSoundUI() {
+  document.getElementById('sound-total-frames').textContent = state.frames.length;
+}
+
+function soundGoToFrame(i) {
+  soundState.currentFrame = Math.max(0, Math.min(state.frames.length - 1, i));
+  renderSoundPreview();
+  refreshSoundFrameStrip();
+  updateSoundUI();
+  updateSoundPlayhead();
+  // Scroll into view
+  const col = document.getElementById('sf-col-' + soundState.currentFrame);
+  if (col) col.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+function updateSoundPlayhead() {
+  const playhead = document.getElementById('sound-playhead');
+  if (!playhead) return;
+  const col = document.getElementById('sf-col-' + soundState.currentFrame);
+  if (!col) { playhead.style.display = 'none'; return; }
+  const scroll = document.getElementById('sound-frame-strip-scroll');
+  if (!scroll) return;
+  const colRect = col.getBoundingClientRect();
+  const scrollRect = scroll.getBoundingClientRect();
+  const left = colRect.left - scrollRect.left + scroll.scrollLeft + colRect.width / 2;
+  playhead.style.left = left + 'px';
+  playhead.style.display = 'block';
+}
+
+function soundGoFirst() { soundGoToFrame(0); }
+function soundGoPrev()  { soundGoToFrame(soundState.currentFrame - 1); }
+function soundGoNext()  { soundGoToFrame(soundState.currentFrame + 1); }
+function soundGoLast()  { soundGoToFrame(state.frames.length - 1); }
+
+function soundTogglePlay() {
+  if (soundState.isPlaying) soundPause();
+  else soundPlay();
+}
+
+function soundPlay() {
+  soundState.isPlaying = true;
+  document.getElementById('sound-play-icon').innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  const fps = state.fps || 24;
+  const delay = 1000 / fps;
+  soundState._playInterval = setInterval(() => {
+    if (soundState.currentFrame >= state.frames.length - 1) {
+      soundState.currentFrame = 0;
+    } else {
+      soundState.currentFrame++;
+    }
+    renderSoundPreview();
+    refreshSoundFrameStrip();
+    updateSoundUI();
+    updateSoundPlayhead();
+    const col = document.getElementById('sf-col-' + soundState.currentFrame);
+    if (col) col.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, delay);
+  // Play audio if loaded
+  if (soundState.audioBuffer && soundState.audioCtx) {
+    if (soundState.source) { try { soundState.source.stop(); } catch(e) {} }
+    soundState.source = soundState.audioCtx.createBufferSource();
+    soundState.source.buffer = soundState.audioBuffer;
+    soundState.source.connect(soundState.audioCtx.destination);
+    const startSec = soundState.currentFrame / (state.fps || 24);
+    soundState.source.start(0, Math.min(startSec, soundState.audioBuffer.duration));
+  }
+}
+
+function soundPause() {
+  soundState.isPlaying = false;
+  document.getElementById('sound-play-icon').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+  clearInterval(soundState._playInterval);
+  if (soundState.source) { try { soundState.source.stop(); } catch(e) {} }
+}
+
+// Sound file loading
+document.getElementById('sound-file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('sound-status').textContent = 'Loading…';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    if (!soundState.audioCtx) soundState.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    soundState.audioCtx.decodeAudioData(ev.target.result.slice(0), buf => {
+      soundState.audioBuffer = buf;
+      const channelData = buf.getChannelData(0);
+      soundState.waveformData = buildWaveformData(channelData, Math.max(state.frames.length * 64, 1200));
+      document.getElementById('sound-status').textContent = `✓ ${file.name} (${buf.duration.toFixed(1)}s)`;
+      // Auto-extend frames to match audio
+      const neededFrames = Math.ceil(buf.duration * (state.fps || 24));
+      while (state.frames.length < neededFrames) addFrame(state.frames.length - 1);
+      buildSoundFrameStrip();
+      updateSoundUI();
+    }, () => {
+      document.getElementById('sound-status').textContent = '⚠ Could not decode audio';
+    });
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+});
+
+function buildWaveformData(channelData, numBins) {
+  const binSize = Math.max(1, Math.floor(channelData.length / numBins));
+  const bins = [];
+  for (let i = 0; i < numBins; i++) {
+    let maxAmp = 0;
+    for (let j = 0; j < binSize; j++) {
+      const amp = Math.abs(channelData[i * binSize + j] || 0);
+      if (amp > maxAmp) maxAmp = amp;
+    }
+    bins.push(maxAmp);
+  }
+  return bins;
+}
+
+function drawWaveform() {
+  // Legacy stub - now we use drawAllFrameWaves via buildSoundFrameStrip
+  if (state.mode === 'sound') drawAllFrameWaves();
+}
+
+// Update playhead when strip is scrolled
+document.addEventListener('DOMContentLoaded', () => {
+  const scroll = document.getElementById('sound-frame-strip-scroll');
+  if (scroll) scroll.addEventListener('scroll', () => { if (state.mode === 'sound') updateSoundPlayhead(); });
+});
+
+// ── Sound Tab Frame Tools ───────────────────────────────────────────────────
+function soundAddFrame() {
+  addFrame(soundState.currentFrame);
+  soundState.currentFrame = Math.min(soundState.currentFrame + 1, state.frames.length - 1);
+  buildSoundFrameStrip();
+  renderSoundPreview();
+  updateSoundUI();
+}
+
+function soundDuplicateFrame() {
+  duplicateFrame(soundState.currentFrame);
+  soundState.currentFrame = Math.min(soundState.currentFrame + 1, state.frames.length - 1);
+  buildSoundFrameStrip();
+  renderSoundPreview();
+  updateSoundUI();
+  if (soundState.audioBuffer) {
+    const channelData = soundState.audioBuffer.getChannelData(0);
+    soundState.waveformData = buildWaveformData(channelData, Math.max(state.frames.length * 64, 1200));
+    drawAllFrameWaves();
+  }
+}
+
+function soundDeleteFrame() {
+  if (state.frames.length <= 1) { alert('Cannot delete the last frame.'); return; }
+  deleteFrame(soundState.currentFrame);
+  soundState.currentFrame = Math.max(0, Math.min(soundState.currentFrame, state.frames.length - 1));
+  buildSoundFrameStrip();
+  renderSoundPreview();
+  updateSoundUI();
+}
+
+function soundSplitFrame() {
+  document.getElementById('split-pct').value = 50;
+  document.getElementById('split-pct-val').textContent = '50%';
+  document.getElementById('split-modal').classList.add('show');
+}
+
+// Trim state
+let _trimSide = 'start';
+function setTrimSide(side) {
+  _trimSide = side;
+  document.getElementById('trim-start-btn').classList.toggle('active', side === 'start');
+  document.getElementById('trim-end-btn').classList.toggle('active', side === 'end');
+}
+
+function soundTrimFrame() {
+  _trimSide = 'start';
+  document.getElementById('trim-start-btn').classList.add('active');
+  document.getElementById('trim-end-btn').classList.remove('active');
+  document.getElementById('trim-pct').value = 25;
+  document.getElementById('trim-pct-val').textContent = '25%';
+  document.getElementById('trim-modal').classList.add('show');
+}
+
+function doTrimFrame() {
+  document.getElementById('trim-modal').classList.remove('show');
+  saveUndo();
+  const idx = soundState.currentFrame;
+  const pct = parseInt(document.getElementById('trim-pct').value) / 100;
+  // Split the frame at the trim position
+  const srcFrame = state.frames[idx];
+  const clone = JSON.parse(JSON.stringify(srcFrame));
+  clone.thumbnail = null;
+  delete clone._bgImg;
+  if (_trimSide === 'start') {
+    // Insert clone BEFORE current, then delete the clone (keeping original = "trimmed end")
+    state.frames.splice(idx, 0, clone);
+    // delete the first part (clone at idx)
+    state.frames.splice(idx, 1);
+    soundState.currentFrame = idx;
+  } else {
+    // Insert clone AFTER current, then delete the clone (keeping original = "trimmed start")
+    state.frames.splice(idx + 1, 0, clone);
+    state.frames.splice(idx + 1, 1);
+    soundState.currentFrame = idx;
+  }
+  markDirty();
+  buildSoundFrameStrip();
+  renderSoundPreview();
+  updateSoundUI();
+  if (soundState.audioBuffer) {
+    const channelData = soundState.audioBuffer.getChannelData(0);
+    soundState.waveformData = buildWaveformData(channelData, Math.max(state.frames.length * 64, 1200));
+    drawAllFrameWaves();
+  }
+  // Inform user about what happened
+  const sideLabel = _trimSide === 'start' ? 'start' : 'end';
+  document.getElementById('sound-status').textContent = `✓ Trimmed ${Math.round(pct * 100)}% from ${sideLabel} of frame ${idx + 1}`;
+  setTimeout(() => { if (soundState.audioBuffer) document.getElementById('sound-status').textContent = `✓ Audio loaded`; }, 3000);
+}
+
+function doSplitFrame() {
+  document.getElementById('split-modal').classList.remove('show');
+  saveUndo();
+  const idx = soundState.currentFrame;
+  const srcFrame = state.frames[idx];
+  // Clone the frame as a second half
+  const clone = JSON.parse(JSON.stringify(srcFrame));
+  clone.thumbnail = null;
+  delete clone._bgImg;
+  // Insert the clone after current
+  state.frames.splice(idx + 1, 0, clone);
+  markDirty();
+  soundState.currentFrame = idx + 1;
+  buildSoundFrameStrip();
+  renderSoundPreview();
+  updateSoundUI();
+  // Also rebuild waveform data with new frame count
+  if (soundState.audioBuffer) {
+    const channelData = soundState.audioBuffer.getChannelData(0);
+    soundState.waveformData = buildWaveformData(channelData, Math.max(state.frames.length * 64, 1200));
+    drawAllFrameWaves();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIP SYNC
+// ═══════════════════════════════════════════════════════════════════════════
+function openLipSync() {
+  buildMouthGrid();
+  document.getElementById('lipsync-modal').classList.add('show');
+  checkLipSyncReady();
+}
+
+function closeLipSync() {
+  document.getElementById('lipsync-modal').classList.remove('show');
+}
+
+function buildMouthGrid() {
+  const grid = document.getElementById('lipsync-mouths-grid');
+  grid.innerHTML = '';
+  MOUTH_PHONEMES.forEach(ph => {
+    const cell = document.createElement('div');
+    cell.className = 'mouth-cell' + (mouthDrawings[ph.id] ? ' done' : '');
+    cell.id = 'mouth-cell-' + ph.id;
+    cell.innerHTML = `
+      <div class="mouth-label">${ph.label}</div>
+      <div class="mouth-phoneme">${ph.phonemes}</div>
+      <div class="mouth-canvas-wrap" id="wrap-${ph.id}">
+        <canvas class="mouth-draw-canvas" id="mcanvas-${ph.id}" width="160" height="100"></canvas>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:2px">
+        <button onclick="clearMouth('${ph.id}')" style="font-size:10px;padding:2px 7px;border:1px solid var(--border);background:var(--bg4);color:var(--text2);border-radius:3px;cursor:pointer">✕ Clear</button>
+      </div>
+    `;
+    grid.appendChild(cell);
+
+    // Set up drawing on each mini canvas
+    const mc = document.getElementById('mcanvas-' + ph.id);
+    mouthCanvases[ph.id] = mc;
+    const mctx = mc.getContext('2d');
+    // Draw white bg
+    mctx.fillStyle = '#fff';
+    mctx.fillRect(0, 0, mc.width, mc.height);
+    // Restore saved drawing
+    if (mouthDrawings[ph.id]) {
+      mctx.putImageData(mouthDrawings[ph.id], 0, 0);
+    }
+    // Draw guide for each mouth shape
+    drawMouthGuide(mctx, ph.id, mc.width, mc.height);
+
+    // Mouse drawing
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+    mc.addEventListener('mousedown', ev => {
+      drawing = true;
+      const r = mc.getBoundingClientRect();
+      lastX = (ev.clientX - r.left) * (mc.width / r.width);
+      lastY = (ev.clientY - r.top) * (mc.height / r.height);
+      cell.classList.add('drawing');
+    });
+    mc.addEventListener('mousemove', ev => {
+      if (!drawing) return;
+      const r = mc.getBoundingClientRect();
+      const x = (ev.clientX - r.left) * (mc.width / r.width);
+      const y = (ev.clientY - r.top) * (mc.height / r.height);
+      mctx.beginPath();
+      mctx.moveTo(lastX, lastY);
+      mctx.lineTo(x, y);
+      mctx.strokeStyle = '#222';
+      mctx.lineWidth = 2.5;
+      mctx.lineCap = 'round';
+      mctx.stroke();
+      lastX = x; lastY = y;
+    });
+    const endDraw = () => {
+      if (!drawing) return;
+      drawing = false;
+      cell.classList.remove('drawing');
+      cell.classList.add('done');
+      mouthDrawings[ph.id] = mctx.getImageData(0, 0, mc.width, mc.height);
+      checkLipSyncReady();
+    };
+    mc.addEventListener('mouseup', endDraw);
+    mc.addEventListener('mouseleave', endDraw);
+  });
+}
+
+function drawMouthGuide(mctx, id, W, H) {
+  // Light guide outline for each mouth shape
+  const cx = W/2, cy = H/2;
+  mctx.save();
+  mctx.strokeStyle = 'rgba(100,100,200,0.18)';
+  mctx.lineWidth = 1.5;
+  mctx.setLineDash([3,3]);
+  const guides = {
+    rest:  () => { mctx.beginPath(); mctx.moveTo(cx-25,cy); mctx.lineTo(cx+25,cy); mctx.stroke(); },
+    mbp:   () => { mctx.beginPath(); mctx.moveTo(cx-20,cy); mctx.lineTo(cx+20,cy); mctx.stroke(); mctx.beginPath(); mctx.arc(cx,cy,3,0,Math.PI*2); mctx.stroke(); },
+    fv:    () => { mctx.beginPath(); mctx.moveTo(cx-22,cy-4); mctx.lineTo(cx+22,cy-4); mctx.stroke(); mctx.beginPath(); mctx.moveTo(cx-10,cy-4); mctx.lineTo(cx-10,cy+8); mctx.stroke(); },
+    th:    () => { mctx.beginPath(); mctx.arc(cx,cy+5,18,Math.PI*1.1,Math.PI*1.9); mctx.stroke(); mctx.beginPath(); mctx.moveTo(cx-8,cy+5); mctx.lineTo(cx+8,cy+5); mctx.stroke(); },
+    cdgkn: () => { mctx.beginPath(); mctx.arc(cx,cy,20,0.2,Math.PI-0.2); mctx.stroke(); mctx.beginPath(); mctx.arc(cx,cy,10,0.3,Math.PI-0.3); mctx.stroke(); },
+    r:     () => { mctx.beginPath(); mctx.arc(cx,cy+2,15,Math.PI*1.05,Math.PI*1.95); mctx.stroke(); mctx.beginPath(); mctx.arc(cx,cy+2,7,0,Math.PI*2); mctx.stroke(); },
+    ee:    () => { mctx.beginPath(); mctx.ellipse(cx,cy,28,8,0,0,Math.PI*2); mctx.stroke(); },
+    aa:    () => { mctx.beginPath(); mctx.ellipse(cx,cy,20,18,0,0,Math.PI*2); mctx.stroke(); },
+    oh:    () => { mctx.beginPath(); mctx.ellipse(cx,cy+2,16,20,0,0,Math.PI*2); mctx.stroke(); },
+    oo:    () => { mctx.beginPath(); mctx.ellipse(cx,cy,10,12,0,0,Math.PI*2); mctx.stroke(); },
+    er:    () => { mctx.beginPath(); mctx.arc(cx,cy,14,Math.PI*1.1,Math.PI*1.9); mctx.stroke(); mctx.beginPath(); mctx.arc(cx,cy+6,6,0,Math.PI*2); mctx.stroke(); },
+    woo:   () => { mctx.beginPath(); mctx.ellipse(cx,cy,8,10,0,0,Math.PI*2); mctx.stroke(); },
+  };
+  if (guides[id]) guides[id]();
+  mctx.restore();
+}
+
+function clearMouth(id) {
+  const mc = mouthCanvases[id];
+  if (!mc) return;
+  const mctx = mc.getContext('2d');
+  mctx.fillStyle = '#fff';
+  mctx.fillRect(0, 0, mc.width, mc.height);
+  drawMouthGuide(mctx, id, mc.width, mc.height);
+  delete mouthDrawings[id];
+  const cell = document.getElementById('mouth-cell-' + id);
+  if (cell) { cell.classList.remove('done'); }
+  checkLipSyncReady();
+}
+
+function clearAllMouths() {
+  MOUTH_PHONEMES.forEach(ph => clearMouth(ph.id));
+}
+
+function checkLipSyncReady() {
+  const count = Object.keys(mouthDrawings).length;
+  const btn = document.getElementById('lipsync-analyze-btn');
+  const hint = document.getElementById('lipsync-hint');
+  btn.disabled = count < 12;
+  hint.textContent = count < 12
+    ? `Draw ${12 - count} more mouth shape(s) to enable lip sync.`
+    : '✓ All 12 mouths drawn! Click Run Lip Sync to apply.';
+}
+
+async function runLipSync() {
+  if (!soundState.audioBuffer) {
+    alert('Please load an audio file in the Sound tab first.');
+    return;
+  }
+  const prog = document.getElementById('lipsync-progress');
+  prog.style.display = 'block';
+  prog.textContent = 'Analyzing audio…';
+
+  // Analyze audio: get per-frame amplitude
+  const buf = soundState.audioBuffer;
+  const fps = state.fps || 24;
+  const totalFrames = state.frames.length;
+  const frameAmplitudes = [];
+
+  const ch = buf.getChannelData(0);
+  for (let fi = 0; fi < totalFrames; fi++) {
+    const startSample = Math.floor((fi / fps) * buf.sampleRate);
+    const endSample = Math.floor(((fi + 1) / fps) * buf.sampleRate);
+    let rms = 0;
+    for (let s = startSample; s < Math.min(endSample, ch.length); s++) {
+      rms += ch[s] * ch[s];
+    }
+    rms = Math.sqrt(rms / Math.max(endSample - startSample, 1));
+    frameAmplitudes.push(rms);
+  }
+
+  // Normalize amplitudes
+  const maxAmp = Math.max(...frameAmplitudes, 0.001);
+  const normAmps = frameAmplitudes.map(a => a / maxAmp);
+
+  // Map amplitude levels to mouth shapes (phoneme groups by intensity)
+  // 0.0-0.05: rest, 0.05-0.2: mbp/closed, 0.2-0.5: medium, 0.5-0.75: open, 0.75+: wide open
+  const mouthIds = MOUTH_PHONEMES.map(p => p.id);
+
+  prog.textContent = 'Assigning mouth shapes to frames…';
+  await new Promise(r => setTimeout(r, 30));
+
+  for (let fi = 0; fi < totalFrames; fi++) {
+    const amp = normAmps[fi];
+    let mouthId;
+    if (amp < 0.05) mouthId = 'rest';
+    else if (amp < 0.15) mouthId = 'mbp';
+    else if (amp < 0.25) mouthId = 'fv';
+    else if (amp < 0.35) mouthId = 'th';
+    else if (amp < 0.45) mouthId = 'cdgkn';
+    else if (amp < 0.55) mouthId = 'r';
+    else if (amp < 0.62) mouthId = 'ee';
+    else if (amp < 0.70) mouthId = 'aa';
+    else if (amp < 0.77) mouthId = 'oh';
+    else if (amp < 0.83) mouthId = 'oo';
+    else if (amp < 0.90) mouthId = 'er';
+    else mouthId = 'woo';
+
+    // Store on frame
+    state.frames[fi]._mouthId = mouthId;
+
+    // Place drawn mouth as image object on this frame (if not already)
+    const drawing = mouthDrawings[mouthId];
+    if (drawing) {
+      // Create offscreen canvas for this mouth
+      const oc = document.createElement('canvas');
+      oc.width = 160; oc.height = 100;
+      oc.getContext('2d').putImageData(drawing, 0, 0);
+      const mouthW = Math.round(state.canvasW * 0.18);
+      const mouthH = Math.round(mouthW * 0.625);
+      const mouthX = Math.round(state.canvasW * 0.41);
+      const mouthY = Math.round(state.canvasH * 0.65);
+
+      // Remove old lipsync objects
+      state.frames[fi].objects = state.frames[fi].objects.filter(o => !o._isLipSync);
+
+      const img = new Image();
+      img.src = oc.toDataURL();
+      await new Promise(r => { img.onload = r; });
+      const obj = {
+        id: uid(), type:'image', name:'LipSync:'+mouthId,
+        x: mouthX, y: mouthY, w: mouthW, h: mouthH,
+        rotation:0, opacity:1, visible:true, locked:false,
+        _isLipSync: true, src: img.src, _img: img
+      };
+      state.frames[fi].objects.push(obj);
+    }
+  }
+
+  prog.textContent = '✓ Lip sync complete! ' + totalFrames + ' frames mapped.';
+  markDirty();
+  updateAll();
+  // Refresh sound strip mouth dots
+  state.frames.forEach((f, i) => {
+    const dot = document.getElementById('sf-dot-' + i);
+    if (dot) dot.style.display = f._mouthId ? 'block' : 'none';
+    // Refresh thumb
+    const col = document.getElementById('sf-col-' + i);
+    if (col) {
+      const tc = col.querySelector('canvas.sf-thumb');
+      if (tc) drawSoundThumb(tc, f);
+    }
+  });
+  drawAllFrameWaves();
+  setTimeout(() => { prog.style.display = 'none'; closeLipSync(); }, 1500);
+}
+
+// WHEEL ZOOM
+document.getElementById('canvas-container').addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.92 : 1.09;
+  const newZoom = Math.max(10, Math.min(500, state.zoom * 100 * factor));
+  setZoom(newZoom);
+}, { passive: false });
+
+// HIT TEST
+function hitTest(obj, x, y) {
+  const bbox = getObjBBox(obj);
+  if (!bbox) return false;
+  return x >= bbox.x && x <= bbox.x + bbox.w && y >= bbox.y && y <= bbox.y + bbox.h;
+}
+
+function getObjBBox(obj) {
+  if (obj.type === 'stroke') {
+    if (!obj.points || !obj.points.length) return null;
+    const xs = obj.points.map(p => p.x), ys = obj.points.map(p => p.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    return { x: minX, y: minY, w: Math.max(maxX - minX, 1), h: Math.max(maxY - minY, 1) };
+  } else if (obj.type === 'shape') {
+    return { x: obj.x, y: obj.y, w: obj.w, h: obj.h };
+  } else if (obj.type === 'text') {
+    return { x: obj.x, y: obj.y - (obj.size || 24), w: 100, h: obj.size || 24 };
+  } else if (obj.type === 'image') {
+    return { x: obj.x, y: obj.y, w: obj.w, h: obj.h };
+  }
+  return null;
+}
+
+// ZOOM
+function setZoom(val) {
+  state.zoom = val / 100;
+  document.getElementById('zoom-label').textContent = Math.round(val) + '%';
+  document.getElementById('zoom-slider').value = val;
+  document.getElementById('canvas-wrapper').style.transform = `scale(${state.zoom})`;
+}
+
+// PLAYBACK
+function togglePlay() {
+  state.isPlaying ? pausePlay() : startPlay();
+}
+
+function startPlay() {
+  state.isPlaying = true;
+  document.getElementById('play-icon').innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  scheduleNext();
+}
+
+function pausePlay() {
+  state.isPlaying = false;
+  clearTimeout(state.playTimer);
+  document.getElementById('play-icon').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+}
+
+function scheduleNext() {
+  if (!state.isPlaying) return;
+  const delay = 1000 / state.fps;
+  state.playTimer = setTimeout(() => {
+    let next = state.currentFrame + 1;
+    if (next >= state.frames.length) {
+      if (state.looping) next = 0;
+      else { pausePlay(); return; }
+    }
+    goToFrame(next);
+    scheduleNext();
+  }, delay);
+}
+
+function toggleLoop() {
+  state.looping = !state.looping;
+  document.getElementById('loop-btn').classList.toggle('looping', state.looping);
+}
+
+function setFps(v) { state.fps = parseInt(v); }
+function goFirstFrame() { goToFrame(0); }
+function goPrevFrame() { goToFrame(state.currentFrame - 1); }
+function goNextFrame() { goToFrame(state.currentFrame + 1); }
+function goLastFrame() { goToFrame(state.frames.length - 1); }
+
+// UI UPDATES
+function updateAll() {
+  render();
+  renderOnionSkin();
+  updateFrameStrip();
+  updateTimeline();
+  updateObjectList();
+  document.getElementById('cur-frame-num').textContent = state.currentFrame + 1;
+  document.getElementById('total-frames').textContent = state.frames.length;
+}
+
+function updateFrameStrip() {
+  const strip = document.getElementById('frame-strip');
+  strip.innerHTML = '';
+  state.frames.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'frame-thumb' + (i === state.currentFrame ? ' selected' : '');
+    div.dataset.frameIdx = i;
+    div.onclick = () => goToFrame(i);
+    div.oncontextmenu = e => { e.preventDefault(); showCtxMenu(e, i); };
+    const tc = document.createElement('canvas');
+    tc.width = 96; tc.height = 48;
+    div.appendChild(tc);
+    const numLabel = document.createElement('span');
+    numLabel.className = 'frame-num';
+    numLabel.textContent = i + 1;
+    div.appendChild(numLabel);
+    // Symbol indicators
+    if (f.isMasterSymbol) {
+      const sym = document.createElement('span');
+      sym.style.cssText = 'position:absolute;top:3px;left:5px;font-size:9px;color:#ffd700;background:rgba(0,0,0,0.6);padding:1px 3px;border-radius:2px;';
+      sym.textContent = '★ sym';
+      div.appendChild(sym);
+    } else if (f.instanceOf) {
+      const sym = document.createElement('span');
+      sym.style.cssText = 'position:absolute;top:3px;left:5px;font-size:9px;color:#00d4ff;background:rgba(0,0,0,0.6);padding:1px 3px;border-radius:2px;';
+      sym.textContent = '🔗 inst';
+      div.appendChild(sym);
+    }
+    strip.appendChild(div);
+    if (f.thumbnail) {
+      const img = new Image();
+      img.onload = () => { const c = tc.getContext('2d'); c.drawImage(img, 0, 0, tc.width, tc.height); };
+      img.src = f.thumbnail;
+    }
+  });
+}
+
+function updateTimeline() {
+  const cells = document.getElementById('timeline-cells');
+  cells.innerHTML = '';
+  state.frames.forEach((f, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'tl-cell' + (i === state.currentFrame ? ' current' : '');
+    cell.dataset.tlIdx = i;
+    cell.onclick = () => goToFrame(i);
+    const tc = document.createElement('canvas');
+    tc.width = 48; tc.height = 40;
+    cell.appendChild(tc);
+    const numSpan = document.createElement('span');
+    numSpan.className = 'tl-num';
+    numSpan.textContent = i + 1;
+    cell.appendChild(numSpan);
+    cells.appendChild(cell);
+    if (f.thumbnail) {
+      const img = new Image();
+      img.onload = () => { const c = tc.getContext('2d'); c.drawImage(img, 0, 0, tc.width, tc.height); };
+      img.src = f.thumbnail;
+    }
+  });
+  // Playhead — positioned at the center of the active cell
+  const ph = document.getElementById('timeline-playhead');
+  const cellW = 50; // 48px cell + 2px gap
+  const cellPad = 4; // #timeline-cells padding
+  ph.style.left = (cellPad + state.currentFrame * cellW + cellW / 2 - 1) + 'px';
+}
+
+// Click on timeline track (outside cells) also seeks correctly
+document.addEventListener('DOMContentLoaded', () => {
+  const track = document.getElementById('timeline-track');
+  if (track) {
+    track.addEventListener('click', e => {
+      const cells = document.getElementById('timeline-cells');
+      if (!cells) return;
+      const rect = cells.getBoundingClientRect();
+      const x = e.clientX - rect.left + cells.scrollLeft;
+      const cellW = 50;
+      const idx = Math.max(0, Math.min(state.frames.length - 1, Math.floor(x / cellW)));
+      goToFrame(idx);
+    });
+  }
+});
+
+function updateObjectList() {
+  const list = document.getElementById('object-list');
+  const frame = state.frames[state.currentFrame];
+  list.innerHTML = '';
+  for (let i = frame.objects.length - 1; i >= 0; i--) {
+    const obj = frame.objects[i];
+    const item = document.createElement('div');
+    item.className = 'obj-item' + (state.selectedObjects.includes(obj.id) ? ' selected' : '');
+    item.onclick = () => {
+      state.selectedObjects = [obj.id];
+      render();
+      updateObjectList();
+    };
+    const icon = getObjIcon(obj.type);
+    const name = document.createElement('span');
+    name.className = 'obj-name';
+    name.textContent = obj.name || obj.type;
+    const visBtn = document.createElement('span');
+    visBtn.className = 'obj-vis';
+    visBtn.innerHTML = obj.visible ? eyeIcon() : eyeOffIcon();
+    visBtn.onclick = e => { e.stopPropagation(); obj.visible = !obj.visible; render(); updateObjectList(); };
+    item.innerHTML = `<span style="color:var(--text2);font-size:11px">${icon}</span>`;
+    item.appendChild(name);
+    item.appendChild(visBtn);
+    list.appendChild(item);
+  }
+}
+
+function getObjIcon(type) {
+  const icons = { stroke: '✏', erase: '◻', shape: '▭', text: 'T', image: '⬜', fill: '▓', group: '⬛' };
+  return icons[type] || '○';
+}
+function eyeIcon() { return `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`; }
+function eyeOffIcon() { return `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`; }
+
+// TOOL
+function setTool(t) {
+  const prev = state.tool;
+  state.tool = t;
+  document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.tool-btn[data-tool="${t}"]`);
+  if (btn) btn.classList.add('active');
+  // Show/hide shape type
+  document.getElementById('shape-type-row').style.display = t === 'shape' ? 'flex' : 'none';
+  document.getElementById('fill-row').style.display = t === 'shape' ? 'flex' : 'none';
+  // Show/hide fill panel
+  document.getElementById('fill-panel').style.display = t === 'paint' ? 'block' : 'none';
+  // Cursor
+  canvas.style.cursor = t === 'select' ? 'default' : t === 'text' ? 'text' : t === 'paint' ? 'cell' : 'crosshair';
+  // Exit rig mode if switching away
+  if (t !== 'rig' && prev === 'rig') {
+    rigState.mode = 'idle';
+    rigState.targetObjId = null;
+    rigState.targetObjIds = [];
+    rigState.rig = null;
+    const p = document.getElementById('rig-panel');
+    if (p) p.style.display = 'none';
+    render();
+  }
+  // Auto-start rigging when switching to rig tool — always show picker
+  if (t === 'rig') {
+    setTimeout(startRigging, 0);
+  }
+}
+
+function updateToolProp(key, val) {
+  if (key === 'size') { state.toolProps.size = parseInt(val); document.getElementById('size-val').textContent = val; }
+  else if (key === 'opacity') { state.toolProps.opacity = parseInt(val) / 100; document.getElementById('opacity-val').textContent = val + '%'; }
+  else if (key === 'color') { state.toolProps.color = val; document.getElementById('tool-color-hex').textContent = val; }
+  else state.toolProps[key] = val;
+}
+
+// MODE
+function setMode(m) {
+  state.mode = m;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.mode-tab[data-mode="${m}"]`).classList.add('active');
+  document.getElementById('onion-section').style.display = m === 'animate' ? 'block' : 'none';
+
+  const mainWorkspace = document.getElementById('workspace');
+  const soundWorkspace = document.getElementById('sound-workspace');
+  const timelinePanel = document.getElementById('timeline-panel');
+
+  if (m === 'sound') {
+    mainWorkspace.style.display = 'none';
+    soundWorkspace.style.display = 'flex';
+    timelinePanel.style.display = 'none';
+    document.getElementById('sound-frame-tools').style.display = 'block';
+    initSoundMode();
+  } else {
+    mainWorkspace.style.display = 'flex';
+    soundWorkspace.style.display = 'none';
+    timelinePanel.style.display = '';
+    document.getElementById('sound-frame-tools').style.display = 'none';
+    renderOnionSkin();
+  }
+}
+
+// ONION SKIN
+function toggleOnionSkin() {
+  state.onionSkin = !state.onionSkin;
+  document.getElementById('onion-toggle').classList.toggle('on', state.onionSkin);
+  renderOnionSkin();
+}
+
+function updateOnion() {
+  state.onionPrev = parseInt(document.getElementById('onion-prev').value);
+  state.onionNext = parseInt(document.getElementById('onion-next').value);
+  document.getElementById('onion-prev-val').textContent = state.onionPrev;
+  document.getElementById('onion-next-val').textContent = state.onionNext;
+  renderOnionSkin();
+}
+
+// CONTEXT MENU
+function showCtxMenu(e, frameIdx) {
+  state.ctxTargetFrame = frameIdx;
+  const menu = document.getElementById('ctx-menu');
+  menu.style.display = 'block';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+}
+
+document.addEventListener('click', () => { document.getElementById('ctx-menu').style.display = 'none'; });
+
+function ctxAction(action) {
+  const idx = state.ctxTargetFrame;
+  if (action === 'add-before') { saveUndo(); const f = createFrame(state.frames[Math.max(0,idx-1)]); state.frames.splice(idx, 0, f); if (state.currentFrame >= idx) state.currentFrame++; markDirty(); updateAll(); }
+  else if (action === 'add-after') addFrame(idx);
+  else if (action === 'duplicate') duplicateFrame(idx);
+  else if (action === 'copy') { state.frameClipboard = cloneFrame(state.frames[idx]); }
+  else if (action === 'paste') {
+    if (state.frameClipboard) {
+      const clone = cloneFrame(state.frameClipboard);
+      state.frames.splice(idx + 1, 0, clone);
+      state.currentFrame = idx + 1;
+      markDirty(); updateAll();
+    }
+  }
+  else if (action === 'convert-symbol') {
+    saveUndo();
+    const symbolId = uid();
+    state.frames[idx].symbolId = symbolId;
+    state.frames[idx].isMasterSymbol = true;
+    delete state.frames[idx].instanceOf;
+    alert(`Frame ${idx+1} is now a master symbol (ID: ${symbolId.slice(0,6)}). Right-click any frame and choose "Insert Instance" to reuse it.`);
+    markDirty(); updateAll();
+  }
+  else if (action === 'insert-instance') {
+    // Show symbol picker
+    const masters = state.frames.filter(f => f.isMasterSymbol);
+    if (!masters.length) { alert('No master symbols found. Right-click a frame and choose "Convert to Symbol" first.'); return; }
+    const options = masters.map((f, i) => `${state.frames.indexOf(f)+1}: ${f.symbolId ? f.symbolId.slice(0,6) : 'sym'}`).join('\n');
+    const choice = prompt(`Insert instance of symbol:\n${options}\n\nEnter frame number of master symbol:`);
+    if (!choice) return;
+    const masterIdx = parseInt(choice) - 1;
+    const master = state.frames[masterIdx];
+    if (!master || !master.isMasterSymbol) { alert('Invalid master symbol frame.'); return; }
+    saveUndo();
+    const instance = {
+      objects: master.objects, // shared reference
+      thumbnail: null,
+      bgColor: master.bgColor,
+      bgImage: master.bgImage,
+      _bgImg: master._bgImg,
+      instanceOf: master.symbolId,
+      symbolId: master.symbolId,
+    };
+    state.frames.splice(idx + 1, 0, instance);
+    state.currentFrame = idx + 1;
+    markDirty(); updateAll();
+  }
+  else if (action === 'break-apart') {
+    saveUndo();
+    const frame = state.frames[idx];
+    if (!frame.instanceOf) { alert('This frame is not an instance.'); return; }
+    const independent = cloneFrame(frame);
+    delete independent.instanceOf;
+    delete independent.isMasterSymbol;
+    state.frames[idx] = independent;
+    markDirty(); updateAll();
+  }
+  else if (action === 'clear') clearFrame(idx);
+  else if (action === 'delete') deleteFrame(idx);
+}
+
+// IMPORT IMAGE
+function importImage() {
+  const fi = document.getElementById('file-input');
+  fi.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        saveUndo();
+        const obj = {
+          id: uid(), type: 'image', name: file.name,
+          x: 0, y: 0, w: Math.min(img.width, state.canvasW), h: Math.min(img.height, state.canvasH),
+          rotation: 0, opacity: 1, visible: true, locked: false,
+          src: ev.target.result, _img: img
+        };
+        state.frames[state.currentFrame].objects.push(obj);
+        markDirty(); updateAll();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    fi.value = '';
+  };
+  fi.click();
+}
+
+// EXPORT
+function exportProject() {
+  showModal(`
+    <h3>Export</h3>
+    <div class="modal-row"><label>Format</label>
+      <select id="exp-format" onchange="onExportFormatChange(this.value)">
+        <option value="png">PNG (current frame)</option>
+        <option value="sequence">PNG Sequence (all frames)</option>
+        <option value="gif">Animated GIF</option>
+        <option value="mp4">MP4 Video</option>
+      </select>
+    </div>
+    <div id="exp-mp4-opts" style="display:none">
+      <div class="modal-row"><label>Video Quality (bitrate kbps)</label>
+        <select id="exp-bitrate">
+          <option value="1000">Low (1 Mbps)</option>
+          <option value="4000" selected>Medium (4 Mbps)</option>
+          <option value="8000">High (8 Mbps)</option>
+        </select>
+      </div>
+    </div>
+    <div id="exp-info" style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="doExport()">Export</button>
+    </div>
+  `);
+  onExportFormatChange('png');
+}
+
+function onExportFormatChange(fmt) {
+  const mp4 = document.getElementById('exp-mp4-opts');
+  const info = document.getElementById('exp-info');
+  if (mp4) mp4.style.display = fmt === 'mp4' ? '' : 'none';
+  const fps = state.fps || 24;
+  const frames = state.frames.length;
+  const dur = (frames / fps).toFixed(2);
+  if (info) {
+    if (fmt === 'mp4') info.textContent = `${frames} frames @ ${fps} fps → ~${dur}s video`;
+    else if (fmt === 'gif') info.textContent = 'GIF requires FFmpeg: ffmpeg -i frame_%04d.png output.gif';
+    else info.textContent = '';
+  }
+}
+
+function doExport() {
+  const fmt = document.getElementById('exp-format').value;
+  if (fmt === 'mp4') { doExportMP4(); return; }
+  closeModal();
+  if (fmt === 'png') {
+    const link = document.createElement('a');
+    link.download = `frame_${state.currentFrame + 1}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } else if (fmt === 'sequence') {
+    state.frames.forEach((f, i) => {
+      const tc = document.createElement('canvas');
+      tc.width = state.canvasW; tc.height = state.canvasH;
+      const tc2 = tc.getContext('2d');
+      tc2.fillStyle = f.bgColor || state.bgColor;
+      tc2.fillRect(0, 0, tc.width, tc.height);
+      if (f.bgImage && f._bgImg) tc2.drawImage(f._bgImg, 0, 0, tc.width, tc.height);
+      for (const obj of f.objects) { if (obj.visible) drawObject(tc2, obj); }
+      const link = document.createElement('a');
+      link.download = `frame_${String(i + 1).padStart(4, '0')}.png`;
+      link.href = tc.toDataURL('image/png');
+      link.click();
+    });
+  } else if (fmt === 'gif') {
+    alert('GIF export requires a server-side encoder. Export as PNG sequence and use a tool like FFmpeg:\nffmpeg -i frame_%04d.png output.gif');
+  }
+}
+
+// ── MP4 EXPORT ──────────────────────────────────────────────────────────────
+function doExportMP4() {
+  const bitrate = parseInt(document.getElementById('exp-bitrate').value) * 1000;
+  closeModal();
+
+  const fps = state.fps || 24;
+  const frameDuration = 1000 / fps; // ms per frame
+
+  // Off-screen render canvas
+  const rc = document.createElement('canvas');
+  rc.width = state.canvasW;
+  rc.height = state.canvasH;
+  const rc2 = rc.getContext('2d');
+
+  // Check MediaRecorder support
+  const mimeTypes = ['video/webm;codecs=h264', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  const mimeType = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+
+  const stream = rc.captureStream(fps);
+  const chunks = [];
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: bitrate });
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: mimeType });
+    const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.download = `${state.projectName || 'animation'}.${ext}`;
+    a.href = url;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    hideExportProgress();
+  };
+
+  recorder.start();
+  showExportProgress('Exporting MP4…', state.frames.length);
+
+  let frameIdx = 0;
+  function paintNext() {
+    if (frameIdx >= state.frames.length) {
+      // Hold last frame one extra tick then stop
+      setTimeout(() => recorder.stop(), frameDuration);
+      return;
+    }
+    const f = state.frames[frameIdx];
+    rc2.fillStyle = f.bgColor || state.bgColor;
+    rc2.fillRect(0, 0, rc.width, rc.height);
+    if (f.bgImage && f._bgImg) rc2.drawImage(f._bgImg, 0, 0, rc.width, rc.height);
+    for (const obj of f.objects) { if (obj.visible) drawObject(rc2, obj); }
+    updateExportProgress(frameIdx + 1);
+    frameIdx++;
+    setTimeout(paintNext, frameDuration);
+  }
+  paintNext();
+}
+
+// ── PROGRESS OVERLAY ─────────────────────────────────────────────────────────
+function showExportProgress(label, total) {
+  let el = document.getElementById('export-progress-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'export-progress-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    el.innerHTML = `
+      <div style="color:#e8e8e8;font-size:15px;font-weight:600" id="ep-label"></div>
+      <div style="width:280px;height:6px;background:#333;border-radius:3px;overflow:hidden">
+        <div id="ep-bar" style="height:100%;width:0%;background:#00d4ff;transition:width 0.1s"></div>
+      </div>
+      <div style="color:#aaa;font-size:12px" id="ep-count"></div>`;
+    document.body.appendChild(el);
+  }
+  document.getElementById('ep-label').textContent = label;
+  document.getElementById('ep-bar').style.width = '0%';
+  document.getElementById('ep-count').textContent = `0 / ${total}`;
+  el._total = total;
+  el.style.display = 'flex';
+}
+function updateExportProgress(done) {
+  const el = document.getElementById('export-progress-overlay');
+  if (!el) return;
+  const pct = (done / el._total * 100).toFixed(1);
+  document.getElementById('ep-bar').style.width = pct + '%';
+  document.getElementById('ep-count').textContent = `${done} / ${el._total}`;
+}
+function hideExportProgress() {
+  const el = document.getElementById('export-progress-overlay');
+  if (el) el.style.display = 'none';
+}
+
+// CANVAS SETTINGS
+function showCanvasSettings() {
+  const curFrame = state.frames[state.currentFrame];
+  const curBg = curFrame.bgColor || state.bgColor;
+  showModal(`
+    <h3>Canvas Settings</h3>
+    <div class="modal-row"><label>Width (px)</label><input type="number" id="cs-w" value="${state.canvasW}"></div>
+    <div class="modal-row"><label>Height (px)</label><input type="number" id="cs-h" value="${state.canvasH}"></div>
+    <div class="modal-row"><label>Background Color <span style="font-size:10px;color:var(--text2)">(current + future frames)</span></label><input type="color" id="cs-bg" value="${curBg}"></div>
+    <div class="modal-row"><label>Background Image <span style="font-size:10px;color:var(--text2)">(current + future frames)</span></label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="file" id="cs-bg-img" accept="image/*" style="font-size:11px;flex:1">
+        <button class="btn" onclick="clearBgImage()" style="font-size:11px;padding:3px 8px">Clear</button>
+      </div>
+    </div>
+    <div class="modal-row"><label>Project Name</label><input type="text" id="cs-name" value="${state.projectName}"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="applyCanvasSettings()">Apply</button>
+    </div>
+  `);
+}
+
+function clearBgImage() {
+  saveUndo();
+  for (let i = state.currentFrame; i < state.frames.length; i++) {
+    state.frames[i].bgImage = null;
+    state.frames[i]._bgImg = null;
+  }
+  markDirty(); updateAll();
+}
+
+function applyCanvasSettings() {
+  const newW = parseInt(document.getElementById('cs-w').value) || 800;
+  const newH = parseInt(document.getElementById('cs-h').value) || 600;
+  const newBg = document.getElementById('cs-bg').value;
+  state.projectName = document.getElementById('cs-name').value;
+  document.getElementById('project-name').textContent = state.projectName;
+
+  if (newW !== state.canvasW || newH !== state.canvasH) {
+    state.canvasW = newW; state.canvasH = newH;
+  }
+  state.bgColor = newBg; // global default for new frames
+
+  // Apply bg color to current + future frames only
+  saveUndo();
+  for (let i = state.currentFrame; i < state.frames.length; i++) {
+    state.frames[i].bgColor = newBg;
+  }
+
+  // Handle bg image
+  const bgImgInput = document.getElementById('cs-bg-img');
+  if (bgImgInput && bgImgInput.files && bgImgInput.files[0]) {
+    const file = bgImgInput.files[0];
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        for (let i = state.currentFrame; i < state.frames.length; i++) {
+          state.frames[i].bgImage = ev.target.result;
+          state.frames[i]._bgImg = img;
+        }
+        initCanvas(); closeModal(); markDirty(); updateAll();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    initCanvas(); closeModal(); markDirty(); updateAll();
+  }
+}
+
+function newProject() {
+  if (state.dirty && !confirm('Discard unsaved changes?')) return;
+  state.frames = [createFrame()];
+  state.frames[0].bgColor = state.bgColor;
+  state.currentFrame = 0;
+  state.undoStack = [];
+  state.redoStack = [];
+  state.selectedObjects = [];
+  state.dirty = false;
+  document.getElementById('dirty-indicator').style.display = 'none';
+  updateAll();
+}
+
+// MODAL
+function showModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+document.getElementById('modal-overlay').onclick = e => { if (e.target === e.currentTarget) closeModal(); };
+
+// DIRTY
+function markDirty() {
+  state.dirty = true;
+  document.getElementById('dirty-indicator').style.display = 'inline';
+}
+
+// SIDEBAR SECTION TOGGLE
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+// KEYBOARD
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'z') { e.preventDefault(); undo(); }
+    else if (e.key === 'y') { e.preventDefault(); redo(); }
+    else if (e.key === 'n') { e.preventDefault(); newProject(); }
+    else if (e.key === 's') { e.preventDefault(); exportProject(); }
+    else if (e.key === 'c') {
+      if (state.selectedObjects.length) {
+        const frame = state.frames[state.currentFrame];
+        state.clipboard = state.selectedObjects.map(id => JSON.parse(JSON.stringify(frame.objects.find(o => o.id === id)))).filter(Boolean);
+      }
+    } else if (e.key === 'v') {
+      if (state.clipboard) {
+        saveUndo();
+        for (const obj of state.clipboard) {
+          const clone = Object.assign({}, obj, { id: uid(), x: (obj.x || 0) + 20, y: (obj.y || 0) + 20 });
+          state.frames[state.currentFrame].objects.push(clone);
+        }
+        markDirty(); updateAll();
+      }
+    }
+    return;
+  }
+  switch (e.key) {
+    case 'b': setTool('pen'); break;
+    case 'e': setTool('eraser'); break;
+    case 'v': setTool('select'); break;
+    case 't': setTool('text'); break;
+    case 'o': setTool('shape'); break;
+    case 'f': setTool('paint'); break;
+    case 'r': setTool('rig'); break;
+    case 'ArrowLeft': goPrevFrame(); break;
+    case 'ArrowRight': goNextFrame(); break;
+    case 'Enter': togglePlay(); break;
+    case 'Delete':
+    case 'Backspace':
+      if (state.selectedObjects.length) {
+        saveUndo();
+        state.frames[state.currentFrame].objects = state.frames[state.currentFrame].objects.filter(o => !state.selectedObjects.includes(o.id));
+        state.selectedObjects = [];
+        markDirty(); updateAll();
+      }
+      break;
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RIGGING SYSTEM  —  Branching tree skeleton
+//
+// STRUCTURE:
+//   rig.root  = { x, y }          — the yellow root joint
+//   rig.nodes = [ { id, x, y, parentId } ]  — bone endpoint joints
+//     parentId = 'root' | node.id of parent joint
+//
+// BUILD MODE:
+//   • Clicking an existing joint (root or node) SELECTS it as the active parent.
+//   • Clicking empty space ADDS a new node branching from the active parent.
+//   • Dragging any joint repositions it freely.
+//   • Active parent is highlighted in cyan — branches can fan out from any joint.
+//
+// ANIMATE MODE:
+//   • Dragging root translates entire skeleton.
+//   • Dragging a node ROTATES it around its parent, and propagates to all
+//     descendants (the whole sub-tree rotates together).
+//
+// BIND DATA:
+//   Each mesh point stores the nearest bone segment (parentJointPos→nodePos)
+//   plus a (t, perp) offset — rebuilt on Done, reapplied every animate drag.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const rigState = {
+  mode: 'idle',         // idle | build | animate
+  targetObjId: null,
+  targetObjIds: [],
+  rig: null,            // { root:{x,y}, nodes:[{id,x,y,parentId}], bindData }
+  dragDot: null,
+  hoverDot: null,       // 'root' | node.id
+  activeParent: 'root', // id of joint that next bone will branch from
+};
+
+// ── helpers ────────────────────────────────────────────────────────────────
+function dist(a, b) { return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2); }
+
+// Get world position of any joint by id ('root' or node.id)
+function rigJointPos(rig, id) {
+  if (id === 'root') return rig.root;
+  return rig.nodes.find(n => n.id === id) || rig.root;
+}
+
+// Collect all descendant node ids of a given joint (inclusive of startId if it's a node)
+function rigDescendants(rig, startId) {
+  const result = [];
+  const queue = [startId];
+  while (queue.length) {
+    const cur = queue.shift();
+    rig.nodes.forEach(n => {
+      if (n.parentId === cur) { result.push(n.id); queue.push(n.id); }
+    });
+  }
+  return result;
+}
+
+// Collect all bone segments as [{a:{x,y}, b:{x,y}, idx}]
+function rigSegments(rig) {
+  return rig.nodes.map((n, idx) => ({
+    a: rigJointPos(rig, n.parentId),
+    b: n,
+    idx
+  }));
+}
+
+// ── Bind data ──────────────────────────────────────────────────────────────
+// For each mesh point: find nearest bone segment, store (segIdx, t, perp).
+function computeBindData(rig, obj) {
+  const segs = rigSegments(rig);
+  if (!segs.length) return null;
+  const pts = (obj.type === 'stroke' || obj.type === 'erase')
+    ? (obj.points || [])
+    : [{ x: obj.x || 0, y: obj.y || 0 }];
+
+  return pts.map(p => {
+    let bestSeg = 0, bestT = 0, bestDist = Infinity;
+    segs.forEach((seg, si) => {
+      const dx = seg.b.x - seg.a.x, dy = seg.b.y - seg.a.y;
+      const len2 = dx * dx + dy * dy;
+      let t = len2 < 1e-9 ? 0 : ((p.x - seg.a.x) * dx + (p.y - seg.a.y) * dy) / len2;
+      t = Math.max(0, Math.min(1, t));
+      const cx = seg.a.x + t * dx, cy = seg.a.y + t * dy;
+      const d = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2);
+      if (d < bestDist) { bestDist = d; bestSeg = si; bestT = t; }
+    });
+    const seg = segs[bestSeg];
+    const dx = seg.b.x - seg.a.x, dy = seg.b.y - seg.a.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    const nx = -uy, ny = ux;
+    const cx = seg.a.x + bestT * dx, cy = seg.a.y + bestT * dy;
+    const perp = (p.x - cx) * nx + (p.y - cy) * ny;
+    return { seg: bestSeg, t: bestT, perp };
+  });
+}
+
+function resolveBindData(rig, bindData) {
+  const segs = rigSegments(rig);
+  return bindData.map(bd => {
+    const seg = segs[bd.seg];
+    if (!seg) return { x: rig.root.x, y: rig.root.y };
+    const dx = seg.b.x - seg.a.x, dy = seg.b.y - seg.a.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    const nx = -uy, ny = ux;
+    const cx = seg.a.x + bd.t * dx, cy = seg.a.y + bd.t * dy;
+    return { x: cx + bd.perp * nx, y: cy + bd.perp * ny };
+  });
+}
+
+function applyRigToObj(rig, obj) {
+  if (!rig.bindData) return;
+  const pts = resolveBindData(rig, rig.bindData);
+  if (obj.type === 'stroke' || obj.type === 'erase') {
+    obj.points = pts;
+  } else if (pts.length) {
+    obj.x = pts[0].x; obj.y = pts[0].y;
+  }
+}
+
+// ── Rig UI panel ───────────────────────────────────────────────────────────
+function showRigPanel() {
+  let panel = document.getElementById('rig-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'rig-panel';
+    panel.style.cssText = `position:absolute;top:8px;left:50%;transform:translateX(-50%);
+      background:rgba(20,20,20,0.92);border:1px solid #444;border-radius:8px;
+      padding:8px 14px;display:flex;gap:8px;align-items:center;z-index:200;font-size:12px;color:#aaa;flex-wrap:wrap;max-width:90%;`;
+    document.getElementById('canvas-container').appendChild(panel);
+  }
+  panel.style.display = 'flex';
+  const inBuild = rigState.mode === 'build';
+  const nodeCount = rigState.rig ? rigState.rig.nodes.length : 0;
+  const groupCount = rigState.targetObjIds.length;
+  const groupLabel = groupCount > 1
+    ? `<span style="background:linear-gradient(135deg,#7c3aed,#00d4ff);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;margin-left:4px">Group: ${groupCount} obj</span>`
+    : '';
+  const activeLabel = inBuild
+    ? `<span style="color:#00d4ff;font-size:11px">Active parent: <b style="color:#fff">${rigState.activeParent === 'root' ? 'Root ✦' : 'Joint ' + (rigState.rig.nodes.findIndex(n=>n.id===rigState.activeParent)+1)}</b></span>`
+    : '';
+  panel.innerHTML = `
+    <span style="color:#ffd700;font-weight:700">✦</span> Root &nbsp;
+    <span style="color:#ff4444;font-weight:700">●</span> Joints (${nodeCount})${groupLabel}
+    &nbsp;|&nbsp;
+    ${inBuild
+      ? `${activeLabel} &nbsp;
+         <span style="color:#aaa;font-size:11px">Click joint→set parent · Click empty→add bone</span>
+         &nbsp;<button onclick="rigFinishBuild()" style="background:#00d4ff;color:#000;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;font-weight:700">Done ✓</button>
+         <button onclick="rigClear()" style="background:#333;color:#aaa;border:1px solid #555;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:12px">Clear</button>`
+      : `<span style="color:#44ff88">Animate: drag joints to pose</span>
+         &nbsp;<button onclick="rigStartBuild()" style="background:#333;color:#aaa;border:1px solid #555;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:12px">Edit Rig</button>
+         <button onclick="rigDetach()" style="background:#ff4444;color:#fff;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:12px">Remove</button>`
+    }
+    <button onclick="hideRigPanel()" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:0 2px;margin-left:4px">✕</button>
+  `;
+}
+
+function hideRigPanel() {
+  const p = document.getElementById('rig-panel');
+  if (p) p.style.display = 'none';
+  setTool('select');
+}
+
+// ── Object picker ──────────────────────────────────────────────────────────
+let _rigPickerSelected = new Set();
+
+function startRigging() {
+  const frame = state.frames[state.currentFrame];
+  const allObjs = frame.objects.filter(o => o.visible && !o.locked && getObjBBox(o));
+  if (!allObjs.length) { alert('No objects on this frame to rig.'); return; }
+  _rigPickerSelected = new Set(state.selectedObjects.length ? state.selectedObjects : [allObjs[allObjs.length - 1].id]);
+  const list = document.getElementById('rig-picker-list');
+  list.innerHTML = '';
+  allObjs.slice().reverse().forEach(obj => {
+    const item = document.createElement('div');
+    const isChecked = _rigPickerSelected.has(obj.id);
+    item.className = 'rig-pick-item' + (isChecked ? ' checked' : '');
+    item.dataset.objId = obj.id;
+    item.innerHTML = `<div class="rig-pick-check"></div><span class="rig-pick-label">${obj.name || obj.type}</span><span class="rig-pick-type">${obj.type}</span>`;
+    item.onclick = () => {
+      if (_rigPickerSelected.has(obj.id)) { _rigPickerSelected.delete(obj.id); item.classList.remove('checked'); }
+      else { _rigPickerSelected.add(obj.id); item.classList.add('checked'); }
+    };
+    list.appendChild(item);
+  });
+  document.getElementById('rig-picker-modal').classList.add('show');
+}
+
+function rigPickerToggleAll() {
+  const frame = state.frames[state.currentFrame];
+  const allObjs = frame.objects.filter(o => o.visible && !o.locked && getObjBBox(o));
+  const allSelected = allObjs.every(o => _rigPickerSelected.has(o.id));
+  if (allSelected) _rigPickerSelected.clear();
+  else allObjs.forEach(o => _rigPickerSelected.add(o.id));
+  document.querySelectorAll('.rig-pick-item').forEach(item => {
+    item.classList.toggle('checked', _rigPickerSelected.has(item.dataset.objId));
+  });
+}
+
+function rigPickerConfirm() {
+  document.getElementById('rig-picker-modal').classList.remove('show');
+  const selIds = [..._rigPickerSelected];
+  if (!selIds.length) { alert('Select at least one object to rig.'); return; }
+  const frame = state.frames[state.currentFrame];
+  state.selectedObjects = selIds;
+  rigState.targetObjIds = selIds;
+  rigState.targetObjId = selIds[0];
+  const primaryObj = frame.objects.find(o => o.id === selIds[0]);
+  if (!primaryObj) return;
+  if (primaryObj.rig && primaryObj.rig.nodes) {
+    rigState.rig = JSON.parse(JSON.stringify(primaryObj.rig));
+    rigState.mode = 'animate';
+    rigState.activeParent = 'root';
+  } else {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const id of selIds) {
+      const o = frame.objects.find(x => x.id === id);
+      if (!o) continue;
+      const bb = getObjBBox(o);
+      if (bb) { minX = Math.min(minX, bb.x); minY = Math.min(minY, bb.y); maxX = Math.max(maxX, bb.x + bb.w); maxY = Math.max(maxY, bb.y + bb.h); }
+    }
+    const cx = isFinite(minX) ? (minX + maxX) / 2 : 200;
+    const cy = isFinite(minY) ? (minY + maxY) / 2 : 200;
+    rigState.rig = { root: { x: cx, y: cy }, nodes: [], bindData: null };
+    rigState.mode = 'build';
+    rigState.activeParent = 'root';
+  }
+  showRigPanel();
+  render();
+}
+
+function rigStartBuild() {
+  rigState.mode = 'build';
+  rigState.activeParent = 'root';
+  if (rigState.rig) rigState.rig.bindData = null;
+  showRigPanel();
+  render();
+}
+
+function rigFinishBuild() {
+  if (!rigState.rig) return;
+  if (!rigState.rig.nodes.length) { alert('Add at least one bone first.'); return; }
+  const frame = state.frames[state.currentFrame];
+  const ids = rigState.targetObjIds.length ? rigState.targetObjIds : [rigState.targetObjId];
+  for (const id of ids) {
+    const obj = frame.objects.find(o => o.id === id);
+    if (!obj) continue;
+    const rigCopy = JSON.parse(JSON.stringify(rigState.rig));
+    rigCopy.bindData = computeBindData(rigCopy, obj);
+    rigCopy.groupIds = ids;
+    obj.rig = rigCopy;
+  }
+  // Sync rigState.rig bindData from primary
+  const primary = frame.objects.find(o => o.id === rigState.targetObjId);
+  if (primary && primary.rig) rigState.rig.bindData = primary.rig.bindData;
+  rigState.rig.groupIds = ids;
+  rigState.mode = 'animate';
+  saveUndo(); markDirty();
+  showRigPanel();
+  render();
+}
+
+function rigClear() {
+  const frame = state.frames[state.currentFrame];
+  const ids = rigState.targetObjIds.length ? rigState.targetObjIds : [rigState.targetObjId];
+  if (rigState.rig) { rigState.rig.nodes = []; rigState.rig.bindData = null; }
+  rigState.activeParent = 'root';
+  for (const id of ids) { const obj = frame.objects.find(o => o.id === id); if (obj) obj.rig = null; }
+  showRigPanel(); render();
+}
+
+function rigDetach() {
+  saveUndo();
+  const ids = rigState.targetObjIds.length ? rigState.targetObjIds : [rigState.targetObjId];
+  state.frames.forEach(f => {
+    for (const id of ids) { const o = f.objects.find(x => x.id === id); if (o && o.rig) delete o.rig; }
+  });
+  rigState.mode = 'idle'; rigState.targetObjId = null; rigState.targetObjIds = [];
+  rigState.rig = null; rigState.activeParent = 'root';
+  markDirty(); hideRigPanel(); render();
+}
+
+// ── Mouse handlers ─────────────────────────────────────────────────────────
+function rigMouseDown(e, pos) {
+  if (rigState.mode === 'idle' || !rigState.rig) { startRigging(); return; }
+  const DOT_R = 12;
+  const rig = rigState.rig;
+  const frame = state.frames[state.currentFrame];
+
+  // ── BUILD MODE ────────────────────────────────────────────────────────────
+  if (rigState.mode === 'build') {
+    // Check root hit — sets root as active parent OR starts dragging
+    if (dist(pos, rig.root) <= DOT_R) {
+      // Short-press: select as active parent. We'll distinguish drag vs click in mouseUp.
+      rigState.dragDot = { type: 'buildRoot', startPos: { ...pos }, restRoot: { ...rig.root }, moved: false };
+      rigState.activeParent = 'root';
+      showRigPanel(); render();
+      return;
+    }
+    // Check node hits
+    for (let i = 0; i < rig.nodes.length; i++) {
+      const n = rig.nodes[i];
+      if (dist(pos, n) <= DOT_R) {
+        // Select as active parent AND allow dragging
+        rigState.activeParent = n.id;
+        rigState.dragDot = { type: 'buildNode', idx: i, startPos: { ...pos }, restPos: { x: n.x, y: n.y }, moved: false };
+        showRigPanel(); render();
+        return;
+      }
+    }
+    // Clicked empty space → add new node branching from activeParent
+    const newNode = { id: uid(), x: pos.x, y: pos.y, parentId: rigState.activeParent };
+    rig.nodes.push(newNode);
+    // The new node becomes the new active parent (chain continues naturally)
+    rigState.activeParent = newNode.id;
+    // Sync to objects
+    const ids = rigState.targetObjIds.length ? rigState.targetObjIds : [rigState.targetObjId];
+    ids.forEach(id => { const obj = frame.objects.find(o => o.id === id); if (obj) obj.rig = JSON.parse(JSON.stringify(rig)); });
+    showRigPanel(); render();
+    return;
+  }
+
+  // ── ANIMATE MODE ──────────────────────────────────────────────────────────
+  const ids = rigState.targetObjIds.length ? rigState.targetObjIds : [rigState.targetObjId];
+  const perObjBindData = {};
+  ids.forEach(id => {
+    const o = frame.objects.find(x => x.id === id);
+    if (o && o.rig && o.rig.bindData) perObjBindData[id] = JSON.parse(JSON.stringify(o.rig.bindData));
+  });
+
+  // Hit root → translate whole skeleton
+  if (dist(pos, rig.root) <= DOT_R) {
+    rigState.dragDot = {
+      type: 'animRoot', startPos: { ...pos },
+      restRoot: { ...rig.root },
+      restNodes: rig.nodes.map(n => ({ ...n })),
+      perObjBindData,
+    };
+    return;
+  }
+
+  // Hit a node → rotate its sub-tree around its parent joint
+  for (let i = 0; i < rig.nodes.length; i++) {
+    const n = rig.nodes[i];
+    if (dist(pos, n) <= DOT_R) {
+      const parentPos = rigJointPos(rig, n.parentId);
+      // Collect all descendants (inclusive of this node)
+      const subtreeIds = [n.id, ...rigDescendants(rig, n.id)];
+      rigState.dragDot = {
+        type: 'animNode', nodeId: n.id,
+        parentPos: { ...parentPos },
+        startAngle: Math.atan2(n.y - parentPos.y, n.x - parentPos.x),
+        restNodes: rig.nodes.map(nd => ({ ...nd })),
+        subtreeIds,
+        perObjBindData,
+      };
+      return;
+    }
+  }
+}
+
+function rigMouseMove(e, pos) {
+  if (!rigState.rig) return;
+  const rig = rigState.rig;
+  const drag = rigState.dragDot;
+  const DOT_R = 12;
+  const frame = state.frames[state.currentFrame];
+  const ids = rigState.targetObjIds.length ? rigState.targetObjIds : [rigState.targetObjId];
+
+  // Hover highlight
+  let hover = null;
+  if (dist(pos, rig.root) <= DOT_R) hover = 'root';
+  for (const n of rig.nodes) { if (dist(pos, n) <= DOT_R) { hover = n.id; break; } }
+  if (rigState.hoverDot !== hover) { rigState.hoverDot = hover; render(); }
+
+  if (!drag) return;
+
+  // Build: drag root
+  if (drag.type === 'buildRoot') {
+    const dx = pos.x - drag.startPos.x, dy = pos.y - drag.startPos.y;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) drag.moved = true;
+    if (drag.moved) { rig.root.x = drag.restRoot.x + dx; rig.root.y = drag.restRoot.y + dy; render(); }
+    return;
+  }
+  // Build: drag node
+  if (drag.type === 'buildNode') {
+    const dx = pos.x - drag.startPos.x, dy = pos.y - drag.startPos.y;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) drag.moved = true;
+    if (drag.moved) {
+      rig.nodes[drag.idx].x = drag.restPos.x + dx;
+      rig.nodes[drag.idx].y = drag.restPos.y + dy;
+      ids.forEach(id => { const obj = frame.objects.find(o => o.id === id); if (obj) obj.rig = JSON.parse(JSON.stringify(rig)); });
+      render();
+    }
+    return;
+  }
+  // Animate: translate root + all nodes
+  if (drag.type === 'animRoot') {
+    const dx = pos.x - drag.startPos.x, dy = pos.y - drag.startPos.y;
+    rig.root.x = drag.restRoot.x + dx; rig.root.y = drag.restRoot.y + dy;
+    rig.nodes.forEach((n, i) => { n.x = drag.restNodes[i].x + dx; n.y = drag.restNodes[i].y + dy; });
+    ids.forEach(id => {
+      const obj = frame.objects.find(o => o.id === id);
+      if (obj) {
+        const bd = drag.perObjBindData[id] || rig.bindData;
+        if (bd) { rig.bindData = bd; applyRigToObj(rig, obj); obj.rig = JSON.parse(JSON.stringify(rig)); obj.rig.bindData = bd; }
+      }
+    });
+    render(); return;
+  }
+  // Animate: rotate sub-tree
+  if (drag.type === 'animNode') {
+    const pj = drag.parentPos;
+    const curAngle = Math.atan2(pos.y - pj.y, pos.x - pj.x);
+    const delta = curAngle - drag.startAngle;
+    const cos = Math.cos(delta), sin = Math.sin(delta);
+    rig.nodes.forEach((n, i) => {
+      if (!drag.subtreeIds.includes(n.id)) return;
+      const rx = drag.restNodes[i].x - pj.x, ry = drag.restNodes[i].y - pj.y;
+      n.x = pj.x + rx * cos - ry * sin;
+      n.y = pj.y + rx * sin + ry * cos;
+    });
+    ids.forEach(id => {
+      const obj = frame.objects.find(o => o.id === id);
+      if (obj) {
+        const bd = drag.perObjBindData[id] || rig.bindData;
+        if (bd) { rig.bindData = bd; applyRigToObj(rig, obj); obj.rig = JSON.parse(JSON.stringify(rig)); obj.rig.bindData = bd; }
+      }
+    });
+    render(); return;
+  }
+}
+
+function rigMouseUp(e, pos) {
+  if (!rigState.dragDot) return;
+  const drag = rigState.dragDot;
+  rigState.dragDot = null;
+
+  const frame = state.frames[state.currentFrame];
+  const ids = rigState.targetObjIds.length ? rigState.targetObjIds : [rigState.targetObjId];
+
+  if (rigState.mode === 'animate' && rigState.rig && rigState.rig.nodes.length) {
+    for (const id of ids) {
+      const obj = frame.objects.find(o => o.id === id);
+      if (!obj) continue;
+      const bd = computeBindData(rigState.rig, obj);
+      rigState.rig.bindData = bd;
+      obj.rig = JSON.parse(JSON.stringify(rigState.rig));
+      obj.rig.bindData = bd;
+    }
+  }
+  saveUndo(); markDirty();
+  updateThumbnail(state.currentFrame);
+  updateFrameThumb(state.currentFrame);
+}
+
+// ── Draw rig overlay ───────────────────────────────────────────────────────
+function drawRigOverlay(ctx2) {
+  if (!rigState.rig || rigState.mode === 'idle') return;
+  const rig = rigState.rig;
+  const inBuild = rigState.mode === 'build';
+  const DOT_R = 7;
+  ctx2.save();
+
+  // Draw bone segments (parent→node)
+  rig.nodes.forEach((n, i) => {
+    const a = rigJointPos(rig, n.parentId);
+    const hue = (i * 53) % 360;
+    ctx2.setLineDash([6, 4]);
+    ctx2.lineWidth = 3;
+    ctx2.strokeStyle = `hsla(${hue},100%,65%,0.55)`;
+    ctx2.beginPath(); ctx2.moveTo(a.x, a.y); ctx2.lineTo(n.x, n.y); ctx2.stroke();
+    // Length label
+    ctx2.setLineDash([]);
+    const mx = (a.x + n.x) / 2, my = (a.y + n.y) / 2;
+    const segLen = Math.round(dist(a, n));
+    ctx2.fillStyle = `hsla(${hue},90%,75%,0.75)`;
+    ctx2.font = '9px sans-serif'; ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText(segLen + 'px', mx, my - 8);
+  });
+  ctx2.setLineDash([]);
+
+  // Root dot — yellow (gold)
+  const rootHover = rigState.hoverDot === 'root';
+  const rootDrag = rigState.dragDot && (rigState.dragDot.type === 'buildRoot' || rigState.dragDot.type === 'animRoot');
+  const rootIsActive = inBuild && rigState.activeParent === 'root';
+  const rootR = DOT_R + (rootHover || rootDrag ? 3 : 0) + (rootIsActive ? 3 : 0);
+  ctx2.beginPath(); ctx2.arc(rig.root.x, rig.root.y, rootR, 0, Math.PI * 2);
+  ctx2.fillStyle = rootDrag ? '#fffde7' : '#ffd700'; ctx2.fill();
+  if (rootIsActive) {
+    ctx2.strokeStyle = '#00d4ff'; ctx2.lineWidth = 2.5;
+  } else {
+    ctx2.strokeStyle = '#000'; ctx2.lineWidth = 1.5;
+  }
+  ctx2.stroke();
+  ctx2.fillStyle = '#000'; ctx2.font = 'bold 9px sans-serif';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+  ctx2.fillText('✦', rig.root.x, rig.root.y);
+
+  // Node dots
+  rig.nodes.forEach((n, i) => {
+    const isHover = rigState.hoverDot === n.id;
+    const isDrag = rigState.dragDot && (
+      (rigState.dragDot.type === 'buildNode' && rigState.dragDot.idx === i) ||
+      (rigState.dragDot.type === 'animNode' && rigState.dragDot.nodeId === n.id)
+    );
+    const isActive = inBuild && rigState.activeParent === n.id;
+    const r = DOT_R + (isHover || isDrag ? 3 : 0) + (isActive ? 3 : 0);
+
+    ctx2.beginPath(); ctx2.arc(n.x, n.y, r, 0, Math.PI * 2);
+    ctx2.fillStyle = isDrag ? '#ffaaaa' : (isHover ? '#ff7777' : '#ff4444'); ctx2.fill();
+    if (isActive) {
+      ctx2.strokeStyle = '#00d4ff'; ctx2.lineWidth = 2.5;
+    } else {
+      ctx2.strokeStyle = '#000'; ctx2.lineWidth = 1.5;
+    }
+    ctx2.stroke();
+    ctx2.fillStyle = '#fff'; ctx2.font = 'bold 8px sans-serif';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText(i + 1, n.x, n.y);
+
+    // Branch indicator: little arrow from parent to show it's a branch point
+    const parentPos = rigJointPos(rig, n.parentId);
+    const siblings = rig.nodes.filter(nd => nd.parentId === n.parentId);
+    if (siblings.length > 1) {
+      // Draw a small diamond on the parent joint to show it's a fork
+      const px = parentPos.x, py = parentPos.y;
+      ctx2.save();
+      ctx2.translate(px, py);
+      ctx2.fillStyle = 'rgba(0,212,255,0.6)';
+      ctx2.beginPath();
+      ctx2.moveTo(0, -5); ctx2.lineTo(5, 0); ctx2.lineTo(0, 5); ctx2.lineTo(-5, 0); ctx2.closePath();
+      ctx2.fill();
+      ctx2.restore();
+    }
+  });
+
+  // Mode / hint label near root
+  const groupCount = rigState.targetObjIds.length;
+  ctx2.fillStyle = inBuild ? '#00d4ff' : '#44ff88';
+  ctx2.font = 'bold 10px sans-serif'; ctx2.textAlign = 'left'; ctx2.textBaseline = 'top';
+  const modeLabel = (inBuild ? '● BUILD RIG' : '● ANIMATE') + (groupCount > 1 ? ` (${groupCount} obj)` : '');
+  ctx2.fillText(modeLabel, rig.root.x + DOT_R + 8, rig.root.y - 10);
+
+  ctx2.restore();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FILL TOOL — lightweight record-based flood fill
+//
+// Design: fill objects store ONLY the click point + params (no pixel arrays).
+// The actual flood fill is re-executed at render time on a temp canvas that
+// already has all underlying objects drawn. This means:
+//   • No giant _imageDataArray stored on each fill (was 1.9 MB per 800×600 fill)
+//   • undo/redo, duplicate, clone are instant (tiny JSON)
+//   • Works correctly across many frames without memory or speed issues
+//   • Each fill recomputes fresh against whatever is beneath it
+// ═══════════════════════════════════════════════════════════════════════════
+
+state.fillMode = 'flat';
+function setFillMode(m) {
+  state.fillMode = m;
+  document.getElementById('fmode-flat').classList.toggle('active', m === 'flat');
+  document.getElementById('fmode-gradient').classList.toggle('active', m === 'gradient');
+  document.getElementById('fill-grad-row').style.display = m === 'gradient' ? 'flex' : 'none';
+}
+
+function hexToRgba(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return { r, g, b };
+}
+
+// Non-recursive scanline flood fill — returns a Uint8Array mask (1 = fill, 0 = no fill)
+// Uses tolerance for anti-aliased edges; never overflows the call stack.
+function floodFillMask(data, startX, startY, tolerance, w, h) {
+  const mask = new Uint8Array(w * h);
+  // clamp click to canvas bounds
+  startX = Math.max(0, Math.min(w - 1, startX));
+  startY = Math.max(0, Math.min(h - 1, startY));
+
+  const si = (startY * w + startX) * 4;
+  const tR = data[si], tG = data[si+1], tB = data[si+2], tA = data[si+3];
+
+  function matchesPx(pi) {
+    return Math.abs(data[pi]   - tR) <= tolerance &&
+           Math.abs(data[pi+1] - tG) <= tolerance &&
+           Math.abs(data[pi+2] - tB) <= tolerance &&
+           Math.abs(data[pi+3] - tA) <= tolerance;
+  }
+
+  // Use a typed Int32Array stack for speed — avoids JS array allocation overhead
+  const stack = new Int32Array(w * h * 2);
+  let sp = 0;
+  stack[sp++] = startX;
+  stack[sp++] = startY;
+
+  while (sp > 0) {
+    let y = stack[--sp];
+    let x = stack[--sp];
+
+    // Walk left to find leftmost matching pixel in this span
+    while (x > 0 && matchesPx((y * w + x - 1) * 4)) x--;
+
+    let spanAbove = false, spanBelow = false;
+
+    // Scan right across the matching span
+    while (x < w && matchesPx((y * w + x) * 4)) {
+      const vi = y * w + x;
+      if (!mask[vi]) {
+        mask[vi] = 1;
+
+        // Check row above
+        if (y > 0) {
+          if (matchesPx(((y-1) * w + x) * 4) && !mask[(y-1)*w+x]) {
+            if (!spanAbove) { stack[sp++] = x; stack[sp++] = y - 1; spanAbove = true; }
+          } else { spanAbove = false; }
+        }
+        // Check row below
+        if (y < h - 1) {
+          if (matchesPx(((y+1) * w + x) * 4) && !mask[(y+1)*w+x]) {
+            if (!spanBelow) { stack[sp++] = x; stack[sp++] = y + 1; spanBelow = true; }
+          } else { spanBelow = false; }
+        }
+      }
+      x++;
+    }
+  }
+  return mask;
+}
+
+// Apply fill color to the mask with optional edge smoothing and gradient
+// Returns a new ImageData with ONLY the fill pixels (transparent elsewhere)
+// so it can be drawn over the canvas with drawImage at render time.
+function applyFillToMask(mask, color1Hex, color2Hex, mode, opacity, smoothPx, w, h) {
+  const c1 = hexToRgba(color1Hex);
+  const c2 = hexToRgba(color2Hex);
+  const out = new Uint8ClampedArray(w * h * 4); // starts fully transparent
+
+  // Gradient bounding box
+  let minX = w, maxX = 0;
+  if (mode === 'gradient') {
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++)
+        if (mask[y*w+x]) { if (x < minX) minX = x; if (x > maxX) maxX = x; }
+  }
+
+  // Build smooth alpha channel from mask via 2-pass box blur
+  let alpha = new Float32Array(mask); // copy mask as floats
+  if (smoothPx > 0) {
+    const tmp = new Float32Array(w * h);
+    const r = smoothPx;
+    // horizontal
+    for (let y = 0; y < h; y++) {
+      let sum = 0, cnt = 0;
+      for (let x = 0; x < w; x++) {
+        sum += alpha[y*w+x]; cnt++;
+        if (x >= r*2) { sum -= alpha[y*w+(x-r*2)]; cnt--; }
+        tmp[y*w+x] = sum / cnt;
+      }
+    }
+    // vertical
+    const blurred = new Float32Array(w * h);
+    for (let x = 0; x < w; x++) {
+      let sum = 0, cnt = 0;
+      for (let y = 0; y < h; y++) {
+        sum += tmp[y*w+x]; cnt++;
+        if (y >= r*2) { sum -= tmp[(y-r*2)*w+x]; cnt--; }
+        blurred[y*w+x] = sum / cnt;
+      }
+    }
+    alpha = blurred;
+  }
+
+  const span = maxX - minX || 1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const a = alpha[y*w+x];
+      if (a < 0.004) continue;
+      const i = (y*w+x)*4;
+      let fr, fg, fb;
+      if (mode === 'gradient' && maxX > minX) {
+        const t = (x - minX) / span;
+        fr = Math.round(c1.r + (c2.r - c1.r) * t);
+        fg = Math.round(c1.g + (c2.g - c1.g) * t);
+        fb = Math.round(c1.b + (c2.b - c1.b) * t);
+      } else {
+        fr = c1.r; fg = c1.g; fb = c1.b;
+      }
+      out[i]   = fr;
+      out[i+1] = fg;
+      out[i+2] = fb;
+      out[i+3] = Math.round(a * opacity * 255);
+    }
+  }
+  return new ImageData(out, w, h);
+}
+
+// Execute a fill record against a pre-rendered canvas context.
+// Called by drawObject() at render time — lightweight, no stored pixel data.
+function executeFillRecord(fillObj, targetCtx, w, h, allObjsBelow, frame, bgColor, bgImg) {
+  // Build a snapshot of the canvas at the moment the fill was applied
+  // (i.e. render only objects that were drawn before this fill object)
+  const tmp = document.createElement('canvas');
+  tmp.width = w; tmp.height = h;
+  const tc = tmp.getContext('2d');
+  tc.fillStyle = bgColor;
+  tc.fillRect(0, 0, w, h);
+  if (bgImg) tc.drawImage(bgImg, 0, 0, w, h);
+  for (const obj of allObjsBelow) {
+    if (obj.visible) drawObject(tc, obj);
+  }
+
+  const imageData = tc.getImageData(0, 0, w, h);
+  const mask = floodFillMask(
+    imageData.data,
+    Math.round(fillObj.fillX), Math.round(fillObj.fillY),
+    fillObj.tolerance, w, h
+  );
+  const fillImageData = applyFillToMask(
+    mask,
+    fillObj.color, fillObj.color2 || '#000000',
+    fillObj.fillMode || 'flat',
+    fillObj.fillOpacity !== undefined ? fillObj.fillOpacity : 1,
+    fillObj.smoothPx || 0,
+    w, h
+  );
+
+  // Draw the fill layer onto target
+  const offscreen = document.createElement('canvas');
+  offscreen.width = w; offscreen.height = h;
+  offscreen.getContext('2d').putImageData(fillImageData, 0, 0);
+  targetCtx.save();
+  targetCtx.globalAlpha = fillObj.opacity !== undefined ? fillObj.opacity : 1;
+  targetCtx.drawImage(offscreen, 0, 0);
+  targetCtx.restore();
+}
+
+// INIT
+state.frames.push(createFrame());
+state.frames[0].bgColor = state.bgColor;
+initCanvas();
+setZoom(100);
+setMode('draw');
+setTool('pen');
+updateAll();
+document.getElementById('total-frames').textContent = 1;
+
+// Auto-save indicator
+setInterval(() => {
+  if (state.dirty) {
+    const d = document.getElementById('dirty-indicator');
+    d.textContent = d.textContent === '●' ? '◎' : '●';
+  }
+}, 1000);
+</script>
+
+<!-- AI GENERATE MODAL -->
+<!-- HF API Key prompt overlay -->
+<div id="hf-key-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:800;display:none;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;width:400px;max-width:95vw;">
+    <h3 style="margin-bottom:6px;font-size:15px;display:flex;align-items:center;gap:8px;">
+      🤗 Hugging Face API Key
+    </h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6;">
+      AI image generation requires a free Hugging Face API key.<br>
+      Get one at <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:var(--accent);text-decoration:none;">huggingface.co/settings/tokens</a> → New token → Read access.
+    </p>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">API Key (hf_…)</label>
+      <input id="hf-key-input" type="password" placeholder="hf_xxxxxxxxxxxxxxxxxxxx"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;font-family:monospace;"
+        autocomplete="off">
+      <div style="font-size:10px;color:var(--text2);margin-top:4px;">Stored in your browser only — never sent anywhere except Hugging Face.</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn" onclick="document.getElementById('hf-key-modal').style.display='none'">Cancel</button>
+      <button class="btn primary" onclick="saveHFKey()">Save & Continue →</button>
+    </div>
+  </div>
+</div>
+
+<div id="ai-modal">
+  <div id="ai-modal-box">
+    <h3>✦ AI Generate <span class="ai-badge">FLUX</span></h3>
+    <div id="ai-subtitle" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+      <span>Describe what to generate — placed on the current frame</span>
+      <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="promptHFKey()">🔑 API Key</button>
+    </div>
+    <textarea id="ai-prompt-input" placeholder="e.g. a cute cartoon cat sitting on a cloud, white background, flat illustration style"></textarea>
+    <div class="ai-row">
+      <div>
+        <label>Width</label>
+        <select id="ai-width">
+          <option value="256">256</option>
+          <option value="512" selected>512</option>
+          <option value="768">768</option>
+          <option value="1024">1024</option>
+        </select>
+      </div>
+      <div>
+        <label>Height</label>
+        <select id="ai-height">
+          <option value="256">256</option>
+          <option value="512" selected>512</option>
+          <option value="768">768</option>
+          <option value="1024">1024</option>
+        </select>
+      </div>
+      <div>
+        <label>Model</label>
+        <select id="ai-model">
+          <option value="black-forest-labs/FLUX.1-schnell">FLUX.1-schnell (fast)</option>
+          <option value="black-forest-labs/FLUX.1-dev">FLUX.1-dev (quality)</option>
+          <option value="stabilityai/stable-diffusion-xl-base-1.0">SDXL</option>
+          <option value="runwayml/stable-diffusion-v1-5">SD 1.5</option>
+        </select>
+      </div>
+    </div>
+    <input id="ai-neg-input" type="text" placeholder="Negative prompt (optional): blurry, distorted, watermark…">
+    <div id="ai-status"><div class="spinner" id="ai-spinner"></div><span id="ai-status-text"></span></div>
+    <img id="ai-preview" alt="AI preview">
+    <div class="ai-actions">
+      <button class="btn" onclick="closeAIModal()">Cancel</button>
+      <button class="btn primary" id="ai-place-btn" onclick="placeAIImage()">Place on Canvas</button>
+      <button class="btn primary" id="ai-gen-btn" onclick="runAIGenerate()">✦ Generate</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── AI GENERATE (Hugging Face Inference API — direct, no backend needed) ─────
+let _aiObjectURL = null;
+
+function getHFKey() { return localStorage.getItem('quebame_hf_key') || ''; }
+
+function promptHFKey() {
+  const existing = getHFKey();
+  if (existing) document.getElementById('hf-key-input').value = existing;
+  document.getElementById('hf-key-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('hf-key-input').focus(), 50);
+}
+
+function saveHFKey() {
+  const key = document.getElementById('hf-key-input').value.trim();
+  if (!key) { alert('Please paste your Hugging Face API key first.'); return; }
+  if (!key.startsWith('hf_')) { alert('That doesn\'t look like a Hugging Face key (should start with hf_). Please check and try again.'); return; }
+  localStorage.setItem('quebame_hf_key', key);
+  document.getElementById('hf-key-modal').style.display = 'none';
+  // If AI modal is not open yet, open it now
+  document.getElementById('ai-modal').classList.add('show');
+}
+
+function openAIGenerate() {
+  // Check for API key first
+  const key = getHFKey();
+  if (!key) {
+    promptHFKey();
+    return;
+  }
+  // Key exists — open the generate modal directly
+  _aiObjectURL = null;
+  document.getElementById('ai-preview').style.display = 'none';
+  document.getElementById('ai-place-btn').style.display = 'none';
+  document.getElementById('ai-gen-btn').style.display = '';
+  document.getElementById('ai-gen-btn').disabled = false;
+  document.getElementById('ai-gen-btn').textContent = '✦ Generate';
+  document.getElementById('ai-status-text').textContent = '';
+  document.getElementById('ai-spinner').style.display = 'none';
+  document.getElementById('ai-modal').classList.add('show');
+}
+
+function closeAIModal() {
+  document.getElementById('ai-modal').classList.remove('show');
+}
+
+async function runAIGenerate() {
+  const key = getHFKey();
+  if (!key) { promptHFKey(); return; }
+
+  const prompt = document.getElementById('ai-prompt-input').value.trim();
+  if (!prompt) { document.getElementById('ai-status-text').textContent = '⚠ Please enter a prompt.'; return; }
+
+  const model = document.getElementById('ai-model').value;
+  const width  = parseInt(document.getElementById('ai-width').value);
+  const height = parseInt(document.getElementById('ai-height').value);
+  const negPrompt = document.getElementById('ai-neg-input').value.trim();
+
+  const genBtn = document.getElementById('ai-gen-btn');
+  const spinner = document.getElementById('ai-spinner');
+  const statusText = document.getElementById('ai-status-text');
+
+  genBtn.disabled = true;
+  genBtn.textContent = 'Generating…';
+  spinner.style.display = 'block';
+  statusText.textContent = 'Sending to Hugging Face…';
+  document.getElementById('ai-preview').style.display = 'none';
+  document.getElementById('ai-place-btn').style.display = 'none';
+  if (_aiObjectURL) { URL.revokeObjectURL(_aiObjectURL); _aiObjectURL = null; }
+
+  try {
+    // Build request body — FLUX models only accept inputs.prompt, SD models accept more
+    const isFlux = model.includes('FLUX');
+    const body = isFlux
+      ? { inputs: prompt }
+      : {
+          inputs: prompt,
+          parameters: {
+            negative_prompt: negPrompt || undefined,
+            width, height,
+            num_inference_steps: 20,
+          }
+        };
+
+    const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'x-wait-for-model': 'true'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      let errMsg = `HTTP ${res.status}`;
+      try {
+        const errData = await res.json();
+        errMsg = errData.error || errMsg;
+        // Hint for common errors
+        if (res.status === 401) errMsg = 'Invalid API key — click 🔑 API Key to update it.';
+        else if (res.status === 403) errMsg = 'Model access denied — try FLUX.1-schnell or SD 1.5.';
+        else if (res.status === 503) errMsg = 'Model is loading on HF servers — wait ~30s and try again.';
+      } catch(e) {}
+      throw new Error(errMsg);
+    }
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      // Some models return JSON with an error even with 200
+      const txt = await res.text();
+      throw new Error('Unexpected response from Hugging Face — ' + txt.slice(0, 120));
+    }
+
+    const blob = await res.blob();
+    _aiObjectURL = URL.createObjectURL(blob);
+    const prev = document.getElementById('ai-preview');
+    prev.src = _aiObjectURL;
+    prev.style.display = 'block';
+    document.getElementById('ai-place-btn').style.display = '';
+    genBtn.textContent = '↺ Regenerate';
+    statusText.textContent = '✓ Done! Preview above.';
+
+  } catch (err) {
+    statusText.textContent = '⚠ ' + err.message;
+    genBtn.textContent = '✦ Generate';
+  } finally {
+    genBtn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+function placeAIImage() {
+  if (!_aiObjectURL) return;
+  const img = new Image();
+  img.onload = () => {
+    saveUndo();
+    const scale = Math.min(state.canvasW / img.width, state.canvasH / img.height, 1);
+    const obj = {
+      id: uid(), type: 'image', name: 'AI Generated',
+      x: 0, y: 0,
+      w: Math.round(img.width * scale),
+      h: Math.round(img.height * scale),
+      rotation: 0, opacity: 1, visible: true, locked: false,
+      src: _aiObjectURL, _img: img
+    };
+    state.frames[state.currentFrame].objects.push(obj);
+    markDirty();
+    updateAll();
+    closeAIModal();
+  };
+  img.src = _aiObjectURL;
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeAIModal();
+    document.getElementById('hf-key-modal').style.display = 'none';
+    closeLipSync();
+  }
+});
+
+// Allow pressing Enter in HF key input to save
+document.addEventListener('DOMContentLoaded', () => {
+  const ki = document.getElementById('hf-key-input');
+  if (ki) ki.addEventListener('keydown', e => { if (e.key === 'Enter') saveHFKey(); });
+});
+</script>
+
+<!-- AI CUT MODAL -->
+<div id="aicut-modal">
+  <div id="aicut-box">
+    <h3>✂ AI Cut <span class="cut-badge">BG REMOVE</span></h3>
+    <div id="aicut-subtitle">
+      Removes the background from any image using the <b>remove.bg</b> API.<br>
+      Get a free API key at <a href="https://www.remove.bg/api" target="_blank">remove.bg/api</a> (50 free images/month).
+    </div>
+
+    <div class="prop-row" style="margin-bottom:4px">
+      <span class="prop-label" style="width:70px;font-size:11px">API Key</span>
+      <input id="aicut-api-input" type="password" placeholder="Paste your remove.bg API key here…" autocomplete="off">
+    </div>
+    <div id="aicut-api-hint">Key is stored in your browser only — never sent anywhere except remove.bg.</div>
+
+    <div id="aicut-drop">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <span>Drop an image here or <u>click to browse</u></span>
+    </div>
+    <input type="file" id="aicut-file-input" accept="image/*" style="display:none">
+
+    <div id="aicut-preview-row">
+      <div><label>Original</label><img id="aicut-orig-img" alt="original"></div>
+      <div><label>Result (transparent BG)</label><img id="aicut-result-img" alt="result"></div>
+    </div>
+
+    <div id="aicut-status"><div class="spinner" id="aicut-spinner"></div><span id="aicut-status-text"></span></div>
+
+    <div class="aicut-actions">
+      <button class="btn" onclick="closeAICut()">Cancel</button>
+      <button class="btn primary" id="aicut-place-btn" onclick="placeAICutImage()">Place on Canvas</button>
+      <button class="btn primary" id="aicut-run-btn" onclick="runAICut()" disabled>✂ Remove Background</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRIM FRAME MODAL -->
+<div id="trim-modal">
+  <div id="trim-box">
+    <h3>✂ Trim Frame Length</h3>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:12px">Remove a portion from the start or end of the current frame by splitting it and deleting the trimmed part. This lets you shorten a frame without deleting its content entirely.</p>
+    <div class="modal-row">
+      <label style="font-size:11px;color:var(--text2);margin-bottom:6px;display:block">Remove from which side?</label>
+      <div id="trim-remove-select">
+        <div class="trim-side-btn active" id="trim-start-btn" onclick="setTrimSide('start')">◀ From Start</div>
+        <div class="trim-side-btn" id="trim-end-btn" onclick="setTrimSide('end')">From End ▶</div>
+      </div>
+    </div>
+    <div class="modal-row">
+      <label style="font-size:11px;color:var(--text2)">Amount to trim (% of frame duration)</label>
+      <input type="range" id="trim-pct" min="1" max="90" value="25" oninput="document.getElementById('trim-pct-val').textContent=this.value+'%'" style="width:100%;margin-top:6px;accent-color:var(--accent)">
+      <div style="text-align:center;font-size:13px;color:var(--accent);margin-top:4px" id="trim-pct-val">25%</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="document.getElementById('trim-modal').classList.remove('show')">Cancel</button>
+      <button class="btn primary" onclick="doTrimFrame()">Trim</button>
+    </div>
+  </div>
+</div>
+
+<!-- RIG OBJECT PICKER MODAL -->
+<div id="rig-picker-modal">
+  <div id="rig-picker-box">
+    <h3>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00d4ff" stroke-width="2"><circle cx="12" cy="4" r="2"/><line x1="12" y1="6" x2="8" y2="12"/><line x1="12" y1="6" x2="16" y2="12"/><circle cx="8" cy="13" r="2"/><circle cx="16" cy="13" r="2"/></svg>
+      Select Objects to Rig
+    </h3>
+    <p id="rig-picker-subtitle">Choose one or more objects to attach to this rig skeleton. Hold Shift or use the checkboxes to select multiple.</p>
+    <div id="rig-picker-list"></div>
+    <div id="rig-picker-actions">
+      <button id="rig-picker-selall" onclick="rigPickerToggleAll()">Select All</button>
+      <button class="btn" onclick="document.getElementById('rig-picker-modal').classList.remove('show')">Cancel</button>
+      <button class="btn primary" onclick="rigPickerConfirm()">Start Rigging</button>
+    </div>
+  </div>
+</div>
+
+<!-- SPLIT FRAME MODAL -->
+<div id="split-modal">
+  <div id="split-box" class="modal">
+    <h3>Split Frame</h3>
+    <div class="modal-row">
+      <label>Split at position (% of frame duration)</label>
+      <input type="range" id="split-pct" min="1" max="99" value="50" oninput="document.getElementById('split-pct-val').textContent=this.value+'%'">
+      <div style="text-align:center;font-size:13px;color:var(--accent);margin-top:4px" id="split-pct-val">50%</div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:4px">Splits the current frame into two frames at the chosen position. Both frames will have identical content.</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="document.getElementById('split-modal').classList.remove('show')">Cancel</button>
+      <button class="btn primary" onclick="doSplitFrame()">Split</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── AI CUT (remove.bg) ───────────────────────────────────────────────────────
+let _acFile = null;
+let _acResultBlob = null;
+
+function openAICut() {
+  _acFile = null; _acResultBlob = null;
+  document.getElementById('aicut-preview-row').style.display = 'none';
+  document.getElementById('aicut-place-btn').style.display = 'none';
+  document.getElementById('aicut-run-btn').disabled = true;
+  document.getElementById('aicut-status-text').textContent = '';
+  document.getElementById('aicut-spinner').style.display = 'none';
+  // restore saved key
+  const saved = localStorage.getItem('quebame_rmbg_key');
+  if (saved) document.getElementById('aicut-api-input').value = saved;
+  document.getElementById('aicut-modal').classList.add('show');
+}
+
+function closeAICut() {
+  document.getElementById('aicut-modal').classList.remove('show');
+}
+
+// Drop zone
+const acDrop = document.getElementById('aicut-drop');
+acDrop.addEventListener('click', () => document.getElementById('aicut-file-input').click());
+acDrop.addEventListener('dragover', e => { e.preventDefault(); acDrop.classList.add('drag-over'); });
+acDrop.addEventListener('dragleave', () => acDrop.classList.remove('drag-over'));
+acDrop.addEventListener('drop', e => {
+  e.preventDefault(); acDrop.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) acLoadFile(f);
+});
+document.getElementById('aicut-file-input').addEventListener('change', e => {
+  if (e.target.files[0]) acLoadFile(e.target.files[0]);
+});
+
+function acLoadFile(file) {
+  _acFile = file;
+  const url = URL.createObjectURL(file);
+  document.getElementById('aicut-orig-img').src = url;
+  document.getElementById('aicut-preview-row').style.display = 'flex';
+  document.getElementById('aicut-result-img').src = '';
+  document.getElementById('aicut-place-btn').style.display = 'none';
+  document.getElementById('aicut-run-btn').disabled = false;
+  document.getElementById('aicut-status-text').textContent = 'Image loaded — click Remove Background.';
+}
+
+async function runAICut() {
+  if (!_acFile) return;
+  const key = document.getElementById('aicut-api-input').value.trim();
+  if (!key) {
+    document.getElementById('aicut-status-text').textContent = '⚠ Paste your remove.bg API key first.';
+    return;
+  }
+  localStorage.setItem('quebame_rmbg_key', key);
+
+  const btn = document.getElementById('aicut-run-btn');
+  const spinner = document.getElementById('aicut-spinner');
+  const statusText = document.getElementById('aicut-status-text');
+
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+  spinner.style.display = 'block';
+  statusText.textContent = 'Sending to remove.bg…';
+  document.getElementById('aicut-place-btn').style.display = 'none';
+
+  try {
+    const formData = new FormData();
+    formData.append('image_file', _acFile);
+    formData.append('size', 'auto');
+
+    const res = await fetch('https://api.remove.bg/v1.0/removebg', {
+      method: 'POST',
+      headers: { 'X-Api-Key': key },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.errors?.[0]?.title || `remove.bg error ${res.status}`);
+    }
+
+    _acResultBlob = await res.blob();
+    const url = URL.createObjectURL(_acResultBlob);
+    document.getElementById('aicut-result-img').src = url;
+    document.getElementById('aicut-place-btn').style.display = '';
+    statusText.textContent = '✓ Background removed! Preview on the right.';
+    btn.textContent = '↺ Try Again';
+
+  } catch (err) {
+    statusText.textContent = '⚠ ' + err.message;
+    btn.textContent = '✂ Remove Background';
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+function placeAICutImage() {
+  if (!_acResultBlob) return;
+  const url = URL.createObjectURL(_acResultBlob);
+  const img = new Image();
+  img.onload = () => {
+    saveUndo();
+    // Scale to fit canvas while keeping aspect
+    const scale = Math.min(state.canvasW / img.width, state.canvasH / img.height, 1);
+    const obj = {
+      id: uid(), type: 'image', name: 'AI Cut',
+      x: 0, y: 0,
+      w: Math.round(img.width * scale),
+      h: Math.round(img.height * scale),
+      rotation: 0, opacity: 1, visible: true, locked: false,
+      src: url, _img: img
+    };
+    state.frames[state.currentFrame].objects.push(obj);
+    markDirty(); updateAll();
+    closeAICut();
+  };
+  img.src = url;
+}
+</script>
+
+</body>
+</html>
