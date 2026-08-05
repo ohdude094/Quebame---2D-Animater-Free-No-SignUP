@@ -624,130 +624,348 @@ input[type=color] { width: 28px; height: 22px; padding: 0; border: 1px solid var
     transition:.18s;
 
 }
-/* ══════════════════ HOME SCREEN ══════════════════ */
-#home-screen {
-  position: fixed; inset: 0; z-index: 3000;
- background:
-radial-gradient(circle at 15% 20%, rgba(0,212,255,.15), transparent 35%),
-radial-gradient(circle at 85% 80%, rgba(124,58,237,.18), transparent 40%),
-linear-gradient(135deg,#0b0f19,#111827,#0b1220);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 34px; padding: 24px; overflow-y: auto;
+<!-- =================== HOME SCREEN =================== -->
+
+<style>
+#home-screen{
+    position:fixed;
+    inset:0;
+    z-index:3000;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:
+    radial-gradient(circle at top left,#00d4ff22,transparent 35%),
+    radial-gradient(circle at bottom right,#7c3aed22,transparent 40%),
+    linear-gradient(135deg,#090d16,#0d1322,#090d16);
+
+    font-family:Inter,Arial,sans-serif;
 }
-#home-screen.hidden { display: none; }
-.home-brand { text-align: center; }
-font-size:65px;
+
+#home-screen.hidden{
+    display:none;
+}
+
+.home-container{
+
+    width:470px;
+    max-width:92%;
+
+    background:rgba(255,255,255,.04);
+
+    backdrop-filter:blur(20px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:24px;
+
+    padding:45px;
+
+    text-align:center;
+
+    box-shadow:
+    0 25px 70px rgba(0,0,0,.45);
+
+    animation:popup .5s ease;
+}
+
+@keyframes popup{
+
+from{
+
+opacity:0;
+
+transform:translateY(25px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:none;
+
+}
+
+}
+
+.home-logo{
+
+font-size:54px;
 
 font-weight:800;
 
-letter-spacing:12px;   color: var(--accent); }
-.home-tagline { margin-top: 6px; font-size: 13px; color: var(--text2); letter-spacing: 0.5px; }
-.home-cards { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
-.home-card {
-  width: 300px; background: var(--bg2); border: 1px solid var(--border); border-radius:22px;
+letter-spacing:8px;
 
-background:rgba(255,255,255,.04);
+color:var(--accent);
 
-backdrop-filter:blur(18px);
+margin-bottom:12px;
 
-border:1px solid rgba(255,255,255,.08);
+}
 
-box-shadow:
-0 25px 60px rgba(0,0,0,.35);
-  padding: 20px; display: flex; flex-direction: column; gap: 12px;
+.home-tagline{
+
+font-size:14px;
+
+color:var(--text2);
+
+margin-bottom:40px;
+
 }
-.home-card h3 { font-size: 13px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text2); display:flex; align-items:center; gap:8px; }
-.home-card h3 svg { width: 16px; height: 16px; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.home-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.home-preset-btn {
-  background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: 8px;
-  padding: 10px 8px; cursor: pointer; text-align: left; transition: all 0.15s; font-size: 12px;
+
+.home-main-btn{
+
+width:100%;
+
+padding:18px;
+
+border:none;
+
+border-radius:18px;
+
+font-size:18px;
+
+font-weight:700;
+
+cursor:pointer;
+
+background:var(--accent);
+
+color:#08151c;
+
+transition:.25s;
+
+margin-bottom:18px;
+
 }
-.home-preset-btn:hover { border-color: var(--accent); background: var(--sel); }
-.home-preset-btn.active { border-color: var(--accent); background: var(--sel); color: var(--accent); }
-.home-preset-btn b { display: block; font-size: 13px; margin-bottom: 2px; }
-.home-preset-btn span { color: var(--text2); font-size: 10.5px; }
-.home-preset-btn.active span { color: var(--accent); opacity: 0.85; }
-.home-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--text2); }
-.home-row select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 5px 8px; border-radius: 6px; font-size: 12px; }
-.home-start-btn {
-  margin-top: 4px; background: var(--accent); color: #06222b; border: none; border-radius: 8px;
-  padding: 11px; font-size: 13px; font-weight: 600; cursor: pointer; transition: filter 0.15s;
+
+.home-main-btn:hover{
+
+transform:translateY(-3px);
+
+filter:brightness(1.08);
+
+box-shadow:0 15px 35px rgba(0,212,255,.35);
+
 }
-.home-start-btn:hover { filter: brightness(1.08); }
-.home-continue-thumb {
-  width: 100%; height: 130px; border-radius: 8px; background: var(--bg3); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
+
+.home-options{
+
+display:flex;
+
+justify-content:center;
+
+gap:14px;
+
+margin-bottom:35px;
+
 }
-.home-continue-thumb canvas { max-width: 100%; max-height: 100%; }
-.home-continue-meta { font-size: 11px; color: var(--text2); }
-.home-secondary-btn {
-  background: none; border: 1px solid var(--border); color: var(--text2); border-radius: 8px;
-  padding: 9px; font-size: 12px; cursor: pointer; transition: all 0.15s;
+
+.home-options select{
+
+background:var(--bg2);
+
+border:1px solid var(--border);
+
+color:var(--text);
+
+padding:10px 14px;
+
+border-radius:10px;
+
+font-size:13px;
+
 }
-.home-secondary-btn:hover { border-color: var(--red); color: var(--red); }
-.home-footer { font-size: 11px; color: var(--text2); text-align: center; max-width: 480px; line-height: 1.6; }
-.home-footer kbd { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: 10px; }
+
+.home-divider{
+
+height:1px;
+
+background:rgba(255,255,255,.08);
+
+margin:30px 0;
+
+}
+
+.home-title{
+
+font-size:13px;
+
+color:var(--text2);
+
+letter-spacing:1px;
+
+text-transform:uppercase;
+
+margin-bottom:18px;
+
+}
+
+.home-continue-thumb{
+
+width:100%;
+
+height:170px;
+
+background:var(--bg2);
+
+border-radius:16px;
+
+border:1px solid var(--border);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+overflow:hidden;
+
+margin-bottom:15px;
+
+}
+
+.home-continue-thumb canvas{
+
+max-width:100%;
+
+max-height:100%;
+
+}
+
+.home-meta{
+
+font-size:12px;
+
+color:var(--text2);
+
+margin-bottom:18px;
+
+}
+
+.home-resume{
+
+width:100%;
+
+padding:14px;
+
+border:none;
+
+border-radius:14px;
+
+cursor:pointer;
+
+background:var(--bg2);
+
+color:var(--text);
+
+font-size:15px;
+
+transition:.25s;
+
+}
+
+.home-resume:hover{
+
+background:var(--sel);
+
+border-color:var(--accent);
+
+}
+
+.home-delete{
+
+margin-top:12px;
+
+background:none;
+
+border:none;
+
+cursor:pointer;
+
+color:#ff6b6b;
+
+font-size:13px;
+
+}
+
+.home-delete:hover{
+
+text-decoration:underline;
+
+}
 </style>
-</head>
-<body>
 
-<!-- HOME SCREEN -->
 <div id="home-screen">
-  <div class="home-brand">
-    <div class="home-logo">QUEBAME</div>
-    <div class="home-tagline">A clean, focused workspace for 2D animation</div>
-  </div>
 
-  <div class="home-cards">
-    <div class="home-card">
-      <h3>
-        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-        New Animation
-      </h3>
-      <div class="home-presets" id="home-presets">
-        <button class="home-preset-btn active" data-w="800" data-h="600" onclick="homeSelectPreset(this)">
-          <b>Standard</b><span>800 × 600</span>
-        </button>
-        <button class="home-preset-btn" data-w="1920" data-h="1080" onclick="homeSelectPreset(this)">
-          <b>HD Widescreen</b><span>1920 × 1080</span>
-        </button>
-        <button class="home-preset-btn" data-w="1080" data-h="1080" onclick="homeSelectPreset(this)">
-          <b>Square</b><span>1080 × 1080</span>
-        </button>
-        <button class="home-preset-btn" data-w="1080" data-h="1920" onclick="homeSelectPreset(this)">
-          <b>Vertical</b><span>1080 × 1920</span>
-        </button>
-      </div>
-      <div class="home-row">
-        <span>Frame rate</span>
-        <select id="home-fps">
-          <option value="12">12 fps</option>
-          <option value="24" selected>24 fps</option>
-          <option value="30">30 fps</option>
-          <option value="60">60 fps</option>
-        </select>
-      </div>
-      <button class="home-start-btn" onclick="homeStartNewProject()">Start Animating</button>
-    </div>
+<div class="home-container">
 
-    <div class="home-card" id="home-continue-card" style="display:none">
-      <h3>
-        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-        Continue Last Session
-      </h3>
-      <div class="home-continue-thumb" id="home-continue-thumb"></div>
-      <div class="home-continue-meta" id="home-continue-meta"></div>
-      <button class="home-start-btn" onclick="homeContinueProject()">Resume</button>
-      <button class="home-secondary-btn" onclick="homeDiscardAutosave()">Discard saved session</button>
-    </div>
-  </div>
+<div class="home-logo">
+QUEBAME
+</div>
 
-  <div class="home-footer">
-    Draw frame-by-frame with Pen, Shape, and Fill tools, then switch to the <b>Animate</b> tab to flip
-    through your timeline, use onion skinning, and play it back. Your work auto-saves in this browser
-    as you go — press <kbd>Ctrl</kbd>+<kbd>Z</kbd> any time to undo.
-  </div>
+<div class="home-tagline">
+Professional 2D Animation Studio
+</div>
+
+<button class="home-main-btn"
+onclick="homeStartNewProject()">
+＋ Start New Project
+</button>
+
+<div class="home-options">
+
+<select id="home-fps">
+
+<option value="12">12 FPS</option>
+
+<option value="24" selected>24 FPS</option>
+
+<option value="30">30 FPS</option>
+
+<option value="60">60 FPS</option>
+
+</select>
+
+</div>
+
+<div id="home-continue-card">
+
+<div class="home-divider"></div>
+
+<div class="home-title">
+Continue Previous Project
+</div>
+
+<div
+class="home-continue-thumb"
+id="home-continue-thumb">
+</div>
+
+<div
+class="home-meta"
+id="home-continue-meta">
+No recent project
+</div>
+
+<button
+class="home-resume"
+onclick="homeContinueProject()">
+Resume Project
+</button>
+
+<button
+class="home-delete"
+onclick="homeDiscardAutosave()">
+Delete Saved Project
+</button>
+
+</div>
+
+</div>
+
 </div>
 
 <!-- TOP BAR -->
