@@ -631,22 +631,16 @@ input[type=color] { width: 28px; height: 22px; padding: 0; border: 1px solid var
 #home-screen{
     position:fixed;
     inset:0;
-    z-index:999999;
-
+    width:100vw;
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-
-    overflow:hidden;
-
-    background:
-    radial-gradient(circle at 15% 20%,rgba(0,212,255,.16),transparent 38%),
-    radial-gradient(circle at 90% 80%,rgba(124,58,237,.18),transparent 40%),
-    linear-gradient(135deg,#080b13,#0d1322,#0a101b);
-
-    font-family:Inter,"Segoe UI",sans-serif;
+    overflow:auto;
+    z-index:9999999;
+    background:#0b1020;
 }
-
+   
 /* floating glow */
 
 #home-screen::before{
