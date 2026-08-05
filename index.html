@@ -299,14 +299,331 @@ input[type=color] { width: 28px; height: 22px; padding: 0; border: 1px solid var
 .aicut-actions { display:flex; gap:8px; justify-content:flex-end; }
 #aicut-place-btn { display:none; }
 
-/* IMPROVED FILL SIDEBAR */
-#fill-panel { display:none; }
-.fill-mode-row { display:flex; gap:4px; margin-bottom:8px; }
-.fill-mode-btn { flex:1; padding:4px 0; font-size:11px; border:1px solid var(--border); background:var(--bg3); color:var(--text2); border-radius:4px; cursor:pointer; text-align:center; transition:all 0.15s; }
-.fill-mode-btn.active { background:var(--sel); color:var(--accent); border-color:rgba(0,212,255,0.4); }
-#fill-grad-row { display:none; }
-#fill-tolerance-row { margin-bottom:6px; }
+/* =====================================================
+   ULTRA MODERN FILL TOOL PANEL
+   Just Paste - No Editing Required
+===================================================== */
 
+#fill-panel{
+    display:none;
+    background:rgba(25,27,34,.95);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:14px;
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.45),
+        inset 0 1px rgba(255,255,255,.05);
+    animation:fillPanelOpen .25s ease;
+}
+
+@keyframes fillPanelOpen{
+    from{
+        opacity:0;
+        transform:translateY(8px) scale(.97);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+/* -------------------- */
+/* Fill Type Buttons */
+/* -------------------- */
+
+.fill-mode-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+}
+
+.fill-mode-btn{
+
+    flex:1;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:linear-gradient(180deg,#343846,#242833);
+
+    color:#d4d7df;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.22s;
+
+    box-shadow:
+        inset 0 1px rgba(255,255,255,.05),
+        0 3px 10px rgba(0,0,0,.25);
+
+}
+
+.fill-mode-btn:hover{
+
+    transform:translateY(-2px);
+
+    background:linear-gradient(180deg,#404555,#2d3340);
+
+    color:white;
+
+}
+
+.fill-mode-btn:active{
+
+    transform:scale(.97);
+
+}
+
+.fill-mode-btn.active{
+
+    background:linear-gradient(135deg,#00d4ff,#008cff);
+
+    color:white;
+
+    box-shadow:
+        0 0 18px rgba(0,212,255,.45),
+        inset 0 1px rgba(255,255,255,.25);
+
+}
+
+/* -------------------- */
+/* Sections */
+/* -------------------- */
+
+#fill-grad-row,
+#fill-tolerance-row,
+.fill-option{
+
+    background:rgba(255,255,255,.03);
+
+    border:1px solid rgba(255,255,255,.05);
+
+    border-radius:12px;
+
+    padding:12px;
+
+    margin-bottom:10px;
+
+}
+
+#fill-grad-row{
+    display:none;
+}
+
+/* -------------------- */
+/* Labels */
+/* -------------------- */
+
+#fill-panel label{
+
+    display:block;
+
+    color:#f3f4f7;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    margin-bottom:8px;
+
+}
+
+/* -------------------- */
+/* Range Slider */
+/* -------------------- */
+
+#fill-panel input[type="range"]{
+
+    width:100%;
+
+    height:6px;
+
+    appearance:none;
+
+    border-radius:20px;
+
+    background:linear-gradient(90deg,#00d4ff,#008cff);
+
+    outline:none;
+
+}
+
+#fill-panel input[type="range"]::-webkit-slider-thumb{
+
+    appearance:none;
+
+    width:18px;
+
+    height:18px;
+
+    border-radius:50%;
+
+    background:white;
+
+    border:3px solid #00d4ff;
+
+    cursor:pointer;
+
+    box-shadow:0 0 10px rgba(0,212,255,.6);
+
+}
+
+/* Firefox */
+
+#fill-panel input[type="range"]::-moz-range-thumb{
+
+    width:18px;
+
+    height:18px;
+
+    border-radius:50%;
+
+    background:white;
+
+    border:3px solid #00d4ff;
+
+    cursor:pointer;
+
+}
+
+/* -------------------- */
+/* Color Picker */
+/* -------------------- */
+
+#fill-panel input[type="color"]{
+
+    width:100%;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    cursor:pointer;
+
+    background:none;
+
+}
+
+/* -------------------- */
+/* Checkbox */
+/* -------------------- */
+
+#fill-panel input[type="checkbox"]{
+
+    accent-color:#00d4ff;
+
+    transform:scale(1.15);
+
+}
+
+/* -------------------- */
+/* Select */
+/* -------------------- */
+
+#fill-panel select{
+
+    width:100%;
+
+    height:40px;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:0 12px;
+
+    background:#2b303d;
+
+    color:white;
+
+    font-size:13px;
+
+}
+
+/* -------------------- */
+/* Number Inputs */
+/* -------------------- */
+
+#fill-panel input[type="number"]{
+
+    width:100%;
+
+    height:40px;
+
+    background:#2b303d;
+
+    color:white;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:0 12px;
+
+}
+
+/* -------------------- */
+/* Fancy Buttons */
+/* -------------------- */
+
+#fill-panel button{
+
+    width:100%;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+    background:linear-gradient(135deg,#00d4ff,#008cff);
+
+    color:white;
+
+    transition:.2s;
+
+}
+
+#fill-panel button:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 20px rgba(0,212,255,.35);
+
+}
+
+#fill-panel button:active{
+
+    transform:scale(.98);
+
+}
+
+/* -------------------- */
+/* Smooth Fade */
+/* -------------------- */
+
+#fill-panel *{
+
+    transition:.18s;
+
+}
 /* ══════════════════ HOME SCREEN ══════════════════ */
 #home-screen {
   position: fixed; inset: 0; z-index: 3000;
