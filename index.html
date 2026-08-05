@@ -960,7 +960,33 @@ font-size:13px;
 
 color:#ff4444;
 
-}
+}<div id="home-screen">
+  <div class="home-container">
+    <div class="home-logo">QUE<span>BAME</span></div>
+    <div class="home-tagline">Animation & Sound Studio</div>
+    
+    <button class="home-main-btn" onclick="homeStartNewProject()">New Project</button>
+    
+    <div class="home-options">
+      <select id="home-fps">
+        <option>12</option>
+        <option selected>24</option>
+        <option>30</option>
+        <option>60</option>
+      </select>
+    </div>
+    
+    <div class="home-divider"></div>
+    <div class="home-title">Continue</div>
+    
+    <div id="home-continue-card" style="display:none">
+      <div class="home-continue-thumb" id="home-continue-thumb"></div>
+      <div class="home-meta" id="home-continue-meta"></div>
+      <button class="home-resume" onclick="homeContinueProject()">Resume Project</button>
+      <button class="home-delete" onclick="homeDiscardAutosave()">Discard</button>
+    </div>
+  </div>
+</div>
 <!-- TOP BAR -->
 <div id="topbar">
   <div id="logo">QUEBAME</div>
