@@ -299,594 +299,331 @@ input[type=color] { width: 28px; height: 22px; padding: 0; border: 1px solid var
 .aicut-actions { display:flex; gap:8px; justify-content:flex-end; }
 #aicut-place-btn { display:none; }
 
-<!-- ═══════════════════════════════════════════════════════════════
-     ULTIMATE FILL TOOL PANEL — Paste this anywhere in your HTML
-     ═══════════════════════════════════════════════════════════════ -->
+/* =====================================================
+   ULTRA MODERN FILL TOOL PANEL
+   Just Paste - No Editing Required
+===================================================== */
 
-<div id="fill-panel">
-  <div class="fill-header">
-    <h3>🎨 Fill Tool</h3>
-    <button class="fill-close" onclick="toggleFillPanel()">×</button>
-  </div>
-
-  <!-- Fill Mode Selector -->
-  <div class="fill-mode-row">
-    <button class="fill-mode-btn active" data-mode="solid" onclick="setFillMode('solid')">
-      <span class="fill-icon">■</span>Solid
-    </button>
-    <button class="fill-mode-btn" data-mode="linear" onclick="setFillMode('linear')">
-      <span class="fill-icon">▤</span>Linear
-    </button>
-    <button class="fill-mode-btn" data-mode="radial" onclick="setFillMode('radial')">
-      <span class="fill-icon">◉</span>Radial
-    </button>
-    <button class="fill-mode-btn" data-mode="pattern" onclick="setFillMode('pattern')">
-      <span class="fill-icon">▦</span>Pattern
-    </button>
-    <button class="fill-mode-btn" data-mode="bucket" onclick="setFillMode('bucket')">
-      <span class="fill-icon">🪣</span>Bucket
-    </button>
-  </div>
-
-  <!-- Solid Color Section -->
-  <div class="fill-section" id="fill-solid-section">
-    <div class="fill-label">Color</div>
-    <div class="color-display">
-      <div class="color-preview-wrap">
-        <div class="color-preview" id="fillColorPreview" style="background:#00d4ff;"></div>
-      </div>
-      <div class="color-hex-row">
-        <input type="color" id="fillColorPicker" value="#00d4ff" oninput="onFillColorChange(this.value)">
-        <input type="text" id="fillHexInput" value="#00d4ff" maxlength="7" onchange="onFillColorChange(this.value)">
-      </div>
-    </div>
-
-    <div class="fill-label">Palette</div>
-    <div class="swatch-grid" id="fillSwatchGrid"></div>
-  </div>
-
-  <!-- Gradient Editor -->
-  <div class="grad-editor" id="fill-grad-editor">
-    <div class="fill-label">Gradient Stops</div>
-    <div class="grad-stops-bar" id="fillGradBar">
-      <div class="grad-stop" style="left:0%; background:#ff6b6b;" data-pos="0" data-color="#ff6b6b"></div>
-      <div class="grad-stop" style="left:100%; background:#4ecdc4;" data-pos="100" data-color="#4ecdc4"></div>
-    </div>
-    <div class="grad-stop-controls">
-      <input type="color" id="gradStopColor" value="#ff6b6b" oninput="updateGradStopColor(this.value)">
-      <button class="grad-btn" onclick="addGradStop()">+ Add Stop</button>
-      <button class="grad-btn" onclick="removeGradStop()">− Remove</button>
-    </div>
-    <div class="slider-row" style="margin-top:10px;">
-      <label>Angle</label>
-      <input type="range" min="0" max="360" value="90" id="fillGradAngle" oninput="document.getElementById('fillAngleVal').textContent=this.value+'°'">
-      <span id="fillAngleVal">90°</span>
-    </div>
-  </div>
-
-  <!-- Pattern Grid -->
-  <div class="pattern-grid" id="fill-pattern-grid">
-    <div class="pattern-thumb active" data-pattern="dots" onclick="selectPattern(this,'dots')">▪</div>
-    <div class="pattern-thumb" data-pattern="lines" onclick="selectPattern(this,'lines')">▫</div>
-    <div class="pattern-thumb" data-pattern="cross" onclick="selectPattern(this,'cross')">✛</div>
-    <div class="pattern-thumb" data-pattern="grid" onclick="selectPattern(this,'grid')">▦</div>
-    <div class="pattern-thumb" data-pattern="diagonal" onclick="selectPattern(this,'diagonal')">◿</div>
-    <div class="pattern-thumb" data-pattern="noise" onclick="selectPattern(this,'noise')">▒</div>
-    <div class="pattern-thumb" data-pattern="checker" onclick="selectPattern(this,'checker')">▣</div>
-    <div class="pattern-thumb" data-pattern="waves" onclick="selectPattern(this,'waves')">〰</div>
-  </div>
-
-  <!-- Bucket Tolerance -->
-  <div class="fill-section" id="fill-tolerance-row" style="display:none;">
-    <div class="slider-row">
-      <label>Tolerance</label>
-      <input type="range" min="0" max="255" value="32" id="fillTolerance" oninput="document.getElementById('fillTolVal').textContent=this.value">
-      <span id="fillTolVal">32</span>
-    </div>
-    <div class="fill-hint">Higher = fills more similar colors</div>
-  </div>
-
-  <!-- Opacity -->
-  <div class="fill-section">
-    <div class="slider-row">
-      <label>Opacity</label>
-      <input type="range" min="0" max="100" value="100" id="fillOpacity" oninput="document.getElementById('fillOpVal').textContent=this.value+'%'; updateFillPreview()">
-      <span id="fillOpVal">100%</span>
-    </div>
-  </div>
-
-  <!-- Recent Colors -->
-  <div class="fill-section">
-    <div class="fill-label">Recent</div>
-    <div class="recent-colors" id="fillRecentColors"></div>
-  </div>
-
-  <!-- Actions -->
-  <div class="fill-actions">
-    <button class="fill-btn-secondary" onclick="clearFill()">Clear</button>
-    <button class="fill-btn-primary" onclick="applyFill()">Apply Fill</button>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     CSS — Paste this in your <style> block or stylesheet
-     ═══════════════════════════════════════════════════════════════ -->
-
-<style>
-/* ─── Fill Panel Container ─── */
-#fill-panel {
-  display: none;
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  width: 280px;
-  background: #16181d;
-  border: 1px solid #2a2e36;
-  border-radius: 14px;
-  padding: 18px;
-  color: #e8eaed;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  font-size: 13px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-  z-index: 9999;
-  user-select: none;
+#fill-panel{
+    display:none;
+    background:rgba(25,27,34,.95);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:14px;
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.45),
+        inset 0 1px rgba(255,255,255,.05);
+    animation:fillPanelOpen .25s ease;
 }
 
-#fill-panel.visible { display: block; }
-
-/* ─── Header ─── */
-.fill-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #2a2e36;
-}
-.fill-header h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0.3px; }
-.fill-close {
-  background: none; border: none; color: #9aa0a6;
-  font-size: 20px; cursor: pointer; line-height: 1; padding: 0; width: 24px; height: 24px;
-  border-radius: 6px; transition: all 0.15s;
-}
-.fill-close:hover { color: #e8eaed; background: #2a2e36; }
-
-/* ─── Mode Buttons ─── */
-.fill-mode-row { display: flex; gap: 5px; margin-bottom: 14px; }
-.fill-mode-btn {
-  flex: 1; padding: 6px 2px; font-size: 10.5px; font-weight: 600;
-  border: 1px solid #2a2e36; background: #1e2128; color: #9aa0a6;
-  border-radius: 8px; cursor: pointer; text-align: center;
-  transition: all 0.18s ease; position: relative;
-}
-.fill-mode-btn:hover { border-color: #3a3f4a; color: #e8eaed; background: #252930; }
-.fill-mode-btn.active {
-  background: #0a2a33; color: #00d4ff;
-  border-color: rgba(0,212,255,0.35);
-  box-shadow: 0 0 12px rgba(0,212,255,0.08) inset;
-}
-.fill-icon { display: block; font-size: 14px; margin-bottom: 2px; }
-
-/* ─── Sections ─── */
-.fill-section { margin-bottom: 12px; }
-.fill-label {
-  font-size: 10px; color: #9aa0a6; text-transform: uppercase;
-  letter-spacing: 0.7px; margin-bottom: 8px; font-weight: 700;
-}
-.fill-hint {
-  font-size: 10px; color: #5f6368; margin-top: 4px; font-style: italic;
+@keyframes fillPanelOpen{
+    from{
+        opacity:0;
+        transform:translateY(8px) scale(.97);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
 }
 
-/* ─── Color Display ─── */
-.color-display { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
-.color-preview-wrap {
-  position: relative; width: 48px; height: 48px; border-radius: 10px;
-  overflow: hidden; border: 2px solid #2a2e36; flex-shrink: 0;
-  background-image:
-    linear-gradient(45deg, #333 25%, transparent 25%),
-    linear-gradient(-45deg, #333 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #333 75%),
-    linear-gradient(-45deg, transparent 75%, #333 75%);
-  background-size: 10px 10px;
-  background-position: 0 0, 0 5px, 5px -5px, -5px 0;
-}
-.color-preview { width: 100%; height: 100%; transition: background 0.2s; }
-.color-hex-row { display: flex; gap: 6px; flex: 1; }
-.color-hex-row input {
-  flex: 1; background: #1e2128; border: 1px solid #2a2e36;
-  border-radius: 6px; padding: 6px 10px; color: #e8eaed;
-  font-size: 12px; font-family: ui-monospace, SFMono-Regular, monospace;
-  outline: none; transition: border-color 0.15s;
-}
-.color-hex-row input:focus { border-color: #00d4ff; }
-.color-hex-row input[type="color"] {
-  width: 38px; flex: 0 0 38px; padding: 2px; height: 32px; cursor: pointer;
+/* -------------------- */
+/* Fill Type Buttons */
+/* -------------------- */
+
+.fill-mode-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
 }
 
-/* ─── Swatches ─── */
-.swatch-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
-.swatch {
-  aspect-ratio: 1; border-radius: 5px; cursor: pointer;
-  border: 2px solid transparent; transition: transform 0.12s, border-color 0.12s;
-}
-.swatch:hover { transform: scale(1.18); z-index: 2; border-color: #e8eaed; }
-.swatch.active { border-color: #00d4ff; box-shadow: 0 0 0 1px #16181d; }
+.fill-mode-btn{
 
-/* ─── Gradient Editor ─── */
-.grad-editor {
-  display: none; background: #1e2128; border-radius: 10px;
-  padding: 12px; border: 1px solid #2a2e36; margin-bottom: 12px;
-}
-.grad-editor.visible { display: block; }
-.grad-stops-bar {
-  height: 28px; border-radius: 6px; margin-bottom: 10px;
-  background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-  position: relative; border: 1px solid #2a2e36; cursor: pointer;
-}
-.grad-stop {
-  position: absolute; top: 50%; transform: translate(-50%, -50%);
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid #fff; box-shadow: 0 1px 6px rgba(0,0,0,0.5);
-  cursor: grab; transition: transform 0.1s;
-}
-.grad-stop:hover { transform: translate(-50%, -50%) scale(1.2); }
-.grad-stop.active-ring { box-shadow: 0 0 0 3px rgba(0,212,255,0.4); }
-.grad-stop-controls {
-  display: flex; gap: 6px; align-items: center;
-}
-.grad-stop-controls input[type="color"] {
-  width: 32px; height: 32px; padding: 2px; border-radius: 6px;
-  border: 1px solid #2a2e36; background: #16181d; cursor: pointer;
-}
-.grad-btn {
-  flex: 1; padding: 6px; font-size: 11px; font-weight: 600;
-  border: 1px solid #2a2e36; background: #252930; color: #9aa0a6;
-  border-radius: 6px; cursor: pointer; transition: all 0.15s;
-}
-.grad-btn:hover { background: #3a3f4a; color: #e8eaed; }
+    flex:1;
 
-/* ─── Pattern Grid ─── */
-.pattern-grid {
-  display: none; grid-template-columns: repeat(4, 1fr); gap: 6px;
-  margin-bottom: 12px;
-}
-.pattern-grid.visible { display: grid; }
-.pattern-thumb {
-  aspect-ratio: 1; border-radius: 8px; border: 2px solid #2a2e36;
-  background: #1e2128; cursor: pointer; display: flex;
-  align-items: center; justify-content: center; font-size: 18px;
-  color: #9aa0a6; transition: all 0.15s;
-}
-.pattern-thumb:hover { border-color: #3a3f4a; color: #e8eaed; transform: scale(1.05); }
-.pattern-thumb.active { border-color: #00d4ff; background: #0a2a33; color: #00d4ff; }
+    height:42px;
 
-/* ─── Sliders ─── */
-.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.slider-row label { font-size: 11px; color: #9aa0a6; width: 60px; flex-shrink: 0; font-weight: 500; }
-.slider-row input[type="range"] {
-  flex: 1; height: 4px; -webkit-appearance: none; appearance: none;
-  background: #2a2e36; border-radius: 2px; outline: none;
-}
-.slider-row input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 14px; height: 14px;
-  background: #00d4ff; border-radius: 50%; cursor: pointer;
-  box-shadow: 0 0 8px rgba(0,212,255,0.3); border: 2px solid #fff;
-}
-.slider-row span {
-  font-size: 11px; color: #e8eaed; width: 40px; text-align: right;
-  font-family: ui-monospace, SFMono-Regular, monospace; font-weight: 600;
+    border:none;
+
+    border-radius:12px;
+
+    background:linear-gradient(180deg,#343846,#242833);
+
+    color:#d4d7df;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.22s;
+
+    box-shadow:
+        inset 0 1px rgba(255,255,255,.05),
+        0 3px 10px rgba(0,0,0,.25);
+
 }
 
-/* ─── Recent Colors ─── */
-.recent-colors { display: flex; gap: 5px; flex-wrap: wrap; }
-.recent-dot {
-  width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid #2a2e36; cursor: pointer; transition: all 0.12s;
-}
-.recent-dot:hover { transform: scale(1.25); border-color: #e8eaed; }
+.fill-mode-btn:hover{
 
-/* ─── Action Buttons ─── */
-.fill-actions { display: flex; gap: 8px; margin-top: 14px; }
-.fill-actions button {
-  flex: 1; padding: 10px; border-radius: 8px; border: none;
-  font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
-}
-.fill-btn-primary {
-  background: linear-gradient(135deg, #00d4ff, #0099cc);
-  color: #fff; box-shadow: 0 2px 10px rgba(0,212,255,0.25);
-}
-.fill-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,212,255,0.35); }
-.fill-btn-secondary {
-  background: #252930; color: #e8eaed; border: 1px solid #2a2e36;
-}
-.fill-btn-secondary:hover { background: #3a3f4a; }
-</style>
+    transform:translateY(-2px);
 
-<!-- ═══════════════════════════════════════════════════════════════
-     JAVASCRIPT — Paste this at the bottom of your <body> or in a .js file
-     ═══════════════════════════════════════════════════════════════ -->
+    background:linear-gradient(180deg,#404555,#2d3340);
 
-<script>
-/* ═══════════════════════════════════════════════════════════════
-   FILL TOOL ENGINE — Complete Implementation
-   ═══════════════════════════════════════════════════════════════ */
+    color:white;
 
-const FillTool = {
-  mode: 'solid',
-  color: '#00d4ff',
-  opacity: 1,
-  tolerance: 32,
-  pattern: 'dots',
-  gradAngle: 90,
-  gradStops: [
-    { pos: 0, color: '#ff6b6b' },
-    { pos: 100, color: '#4ecdc4' }
-  ],
-  selectedStopIndex: 0,
-  recentColors: ['#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dfe6e9'],
-  palette: [
-    '#ff6b6b','#ff8e72','#ff9f43','#feca57','#ffeaa7',
-    '#55efc4','#00d4ff','#74b9ff','#a29bfe','#fd79a8',
-    '#e17055','#d63031','#2d3436','#636e72','#b2bec3',
-    '#00b894','#0984e3','#6c5ce7','#e84393','#2d3436',
-    '#ff7675','#fab1a0','#fdcb6e','#55a3ff','#81ecec',
-    '#a29bfe','#fd79a8','#dfe6e9','#b2bec3','#636e72',
-    '#2d3436','#000000'
-  ]
-};
-
-/* ─── Init ─── */
-function initFillTool() {
-  const grid = document.getElementById('fillSwatchGrid');
-  FillTool.palette.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'swatch';
-    d.style.background = c;
-    d.onclick = () => {
-      document.querySelectorAll('#fillSwatchGrid .swatch').forEach(s => s.classList.remove('active'));
-      d.classList.add('active');
-      onFillColorChange(c);
-    };
-    grid.appendChild(d);
-  });
-  renderRecentColors();
-  updateFillPreview();
-}
-initFillTool();
-
-/* ─── Panel Toggle ─── */
-function toggleFillPanel() {
-  document.getElementById('fill-panel').classList.toggle('visible');
 }
 
-/* ─── Mode Switching ─── */
-function setFillMode(mode) {
-  FillTool.mode = mode;
-  document.querySelectorAll('.fill-mode-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.fill-mode-btn[data-mode="${mode}"]`).classList.add('active');
+.fill-mode-btn:active{
 
-  document.getElementById('fill-solid-section').style.display = (mode === 'solid' || mode === 'bucket') ? 'block' : 'none';
-  document.getElementById('fill-grad-editor').classList.toggle('visible', mode === 'linear' || mode === 'radial');
-  document.getElementById('fill-pattern-grid').classList.toggle('visible', mode === 'pattern');
-  document.getElementById('fill-tolerance-row').style.display = mode === 'bucket' ? 'block' : 'none';
+    transform:scale(.97);
+
 }
 
-/* ─── Color Handling ─── */
-function onFillColorChange(val) {
-  if (!val.match(/^#[0-9A-Fa-f]{6}$/)) return;
-  FillTool.color = val;
-  document.getElementById('fillColorPreview').style.background = val;
-  document.getElementById('fillColorPicker').value = val;
-  document.getElementById('fillHexInput').value = val;
-  addRecentColor(val);
+.fill-mode-btn.active{
+
+    background:linear-gradient(135deg,#00d4ff,#008cff);
+
+    color:white;
+
+    box-shadow:
+        0 0 18px rgba(0,212,255,.45),
+        inset 0 1px rgba(255,255,255,.25);
+
 }
 
-function updateFillPreview() {
-  const op = document.getElementById('fillOpacity').value / 100;
-  document.getElementById('fillColorPreview').style.opacity = op;
+/* -------------------- */
+/* Sections */
+/* -------------------- */
+
+#fill-grad-row,
+#fill-tolerance-row,
+.fill-option{
+
+    background:rgba(255,255,255,.03);
+
+    border:1px solid rgba(255,255,255,.05);
+
+    border-radius:12px;
+
+    padding:12px;
+
+    margin-bottom:10px;
+
 }
 
-/* ─── Recent Colors ─── */
-function renderRecentColors() {
-  const box = document.getElementById('fillRecentColors');
-  box.innerHTML = '';
-  FillTool.recentColors.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'recent-dot';
-    d.style.background = c;
-    d.onclick = () => onFillColorChange(c);
-    box.appendChild(d);
-  });
+#fill-grad-row{
+    display:none;
 }
 
-function addRecentColor(c) {
-  if (FillTool.recentColors.includes(c)) {
-    FillTool.recentColors = FillTool.recentColors.filter(x => x !== c);
-  }
-  FillTool.recentColors.unshift(c);
-  if (FillTool.recentColors.length > 12) FillTool.recentColors.pop();
-  renderRecentColors();
+/* -------------------- */
+/* Labels */
+/* -------------------- */
+
+#fill-panel label{
+
+    display:block;
+
+    color:#f3f4f7;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    margin-bottom:8px;
+
 }
 
-/* ─── Gradient Stops ─── */
-function renderGradStops() {
-  const bar = document.getElementById('fillGradBar');
-  bar.innerHTML = '';
-  const cssStops = FillTool.gradStops.map(s => `${s.color} ${s.pos}%`).join(', ');
-  bar.style.background = `linear-gradient(90deg, ${cssStops})`;
+/* -------------------- */
+/* Range Slider */
+/* -------------------- */
 
-  FillTool.gradStops.forEach((s, i) => {
-    const el = document.createElement('div');
-    el.className = 'grad-stop' + (i === FillTool.selectedStopIndex ? ' active-ring' : '');
-    el.style.left = s.pos + '%';
-    el.style.background = s.color;
-    el.dataset.index = i;
-    el.onmousedown = (e) => startDragStop(e, i);
-    bar.appendChild(el);
-  });
+#fill-panel input[type="range"]{
+
+    width:100%;
+
+    height:6px;
+
+    appearance:none;
+
+    border-radius:20px;
+
+    background:linear-gradient(90deg,#00d4ff,#008cff);
+
+    outline:none;
+
 }
 
-function startDragStop(e, idx) {
-  FillTool.selectedStopIndex = idx;
-  document.getElementById('gradStopColor').value = FillTool.gradStops[idx].color;
-  renderGradStops();
+#fill-panel input[type="range"]::-webkit-slider-thumb{
 
-  const bar = document.getElementById('fillGradBar');
-  const rect = bar.getBoundingClientRect();
+    appearance:none;
 
-  function onMove(ev) {
-    let pct = ((ev.clientX - rect.left) / rect.width) * 100;
-    pct = Math.max(0, Math.min(100, pct));
-    FillTool.gradStops[idx].pos = Math.round(pct);
-    renderGradStops();
-  }
-  function onUp() {
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup', onUp);
-  }
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
+    width:18px;
+
+    height:18px;
+
+    border-radius:50%;
+
+    background:white;
+
+    border:3px solid #00d4ff;
+
+    cursor:pointer;
+
+    box-shadow:0 0 10px rgba(0,212,255,.6);
+
 }
 
-function updateGradStopColor(c) {
-  const idx = FillTool.selectedStopIndex;
-  if (FillTool.gradStops[idx]) {
-    FillTool.gradStops[idx].color = c;
-    renderGradStops();
-  }
+/* Firefox */
+
+#fill-panel input[type="range"]::-moz-range-thumb{
+
+    width:18px;
+
+    height:18px;
+
+    border-radius:50%;
+
+    background:white;
+
+    border:3px solid #00d4ff;
+
+    cursor:pointer;
+
 }
 
-function addGradStop() {
-  if (FillTool.gradStops.length >= 8) return;
-  const last = FillTool.gradStops[FillTool.gradStops.length - 1];
-  const prev = FillTool.gradStops[FillTool.gradStops.length - 2] || { pos: 0 };
-  FillTool.gradStops.push({
-    pos: Math.round((prev.pos + last.pos) / 2),
-    color: '#ffffff'
-  });
-  FillTool.selectedStopIndex = FillTool.gradStops.length - 1;
-  renderGradStops();
+/* -------------------- */
+/* Color Picker */
+/* -------------------- */
+
+#fill-panel input[type="color"]{
+
+    width:100%;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    cursor:pointer;
+
+    background:none;
+
 }
 
-function removeGradStop() {
-  if (FillTool.gradStops.length <= 2) return;
-  FillTool.gradStops.splice(FillTool.selectedStopIndex, 1);
-  FillTool.selectedStopIndex = Math.max(0, FillTool.selectedStopIndex - 1);
-  renderGradStops();
+/* -------------------- */
+/* Checkbox */
+/* -------------------- */
+
+#fill-panel input[type="checkbox"]{
+
+    accent-color:#00d4ff;
+
+    transform:scale(1.15);
+
 }
 
-renderGradStops();
+/* -------------------- */
+/* Select */
+/* -------------------- */
 
-/* ─── Pattern Selection ─── */
-function selectPattern(el, name) {
-  FillTool.pattern = name;
-  document.querySelectorAll('#fill-pattern-grid .pattern-thumb').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
+#fill-panel select{
+
+    width:100%;
+
+    height:40px;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:0 12px;
+
+    background:#2b303d;
+
+    color:white;
+
+    font-size:13px;
+
 }
 
-/* ─── Core Fill Logic ─── */
-function applyFill() {
-  FillTool.opacity = document.getElementById('fillOpacity').value / 100;
-  FillTool.tolerance = parseInt(document.getElementById('fillTolerance').value) || 32;
-  FillTool.gradAngle = parseInt(document.getElementById('fillGradAngle').value) || 90;
+/* -------------------- */
+/* Number Inputs */
+/* -------------------- */
 
-  // 🔗 CONNECT TO YOUR ANIMATOR HERE
-  // This object contains everything you need:
-  const fillData = {
-    mode: FillTool.mode,
-    color: FillTool.color,
-    opacity: FillTool.opacity,
-    tolerance: FillTool.tolerance,
-    pattern: FillTool.pattern,
-    gradAngle: FillTool.gradAngle,
-    gradStops: [...FillTool.gradStops],
-    gradType: FillTool.mode === 'linear' ? 'linear' : 'radial'
-  };
+#fill-panel input[type="number"]{
 
-  console.log('🎨 Fill applied:', fillData);
+    width:100%;
 
-  // === YOUR INTEGRATION POINT ===
-  // Example for canvas:
-  // if (fillData.mode === 'bucket') {
-  //   floodFillCanvas(ctx, x, y, fillData.color, fillData.tolerance);
-  // } else if (fillData.mode === 'solid') {
-  //   ctx.fillStyle = hexToRgba(fillData.color, fillData.opacity);
-  //   ctx.fill();
-  // }
-  // ==============================
+    height:40px;
 
-  // Visual feedback
-  const btn = document.querySelector('.fill-btn-primary');
-  const old = btn.textContent;
-  btn.textContent = '✓ Applied';
-  btn.style.background = '#27ca40';
-  setTimeout(() => { btn.textContent = old; btn.style.background = ''; }, 900);
+    background:#2b303d;
+
+    color:white;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:0 12px;
+
 }
 
-function clearFill() {
-  document.getElementById('fillOpacity').value = 100;
-  document.getElementById('fillOpVal').textContent = '100%';
-  onFillColorChange('#00d4ff');
-  setFillMode('solid');
-  FillTool.gradStops = [{pos:0,color:'#ff6b6b'},{pos:100,color:'#4ecdc4'}];
-  FillTool.selectedStopIndex = 0;
-  renderGradStops();
-  updateFillPreview();
+/* -------------------- */
+/* Fancy Buttons */
+/* -------------------- */
+
+#fill-panel button{
+
+    width:100%;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+    background:linear-gradient(135deg,#00d4ff,#008cff);
+
+    color:white;
+
+    transition:.2s;
+
 }
 
-/* ─── Flood Fill Algorithm (Bucket Tool) ─── */
-function floodFillCanvas(ctx, startX, startY, fillColor, tolerance) {
-  const canvas = ctx.canvas;
-  const w = canvas.width, h = canvas.height;
-  const imgData = ctx.getImageData(0, 0, w, h);
-  const d = imgData.data;
+#fill-panel button:hover{
 
-  const targetIdx = (startY * w + startX) * 4;
-  const tr = d[targetIdx], tg = d[targetIdx+1], tb = d[targetIdx+2], ta = d[targetIdx+3];
+    transform:translateY(-2px);
 
-  const fc = hexToRgb(fillColor);
-  if (!fc) return;
+    box-shadow:0 8px 20px rgba(0,212,255,.35);
 
-  const visited = new Uint8Array(w * h);
-  const stack = [[startX, startY]];
-
-  function match(r, g, b, a) {
-    return Math.abs(r - tr) <= tolerance &&
-           Math.abs(g - tg) <= tolerance &&
-           Math.abs(b - tb) <= tolerance &&
-           Math.abs(a - ta) <= tolerance;
-  }
-
-  while (stack.length) {
-    const [x, y] = stack.pop();
-    const idx = (y * w + x);
-    if (visited[idx]) continue;
-    const p = idx * 4;
-    if (!match(d[p], d[p+1], d[p+2], d[p+3])) continue;
-
-    visited[idx] = 1;
-    d[p] = fc.r; d[p+1] = fc.g; d[p+2] = fc.b; d[p+3] = Math.round(255 * FillTool.opacity);
-
-    if (x > 0) stack.push([x - 1, y]);
-    if (x < w - 1) stack.push([x + 1, y]);
-    if (y > 0) stack.push([x, y - 1]);
-    if (y < h - 1) stack.push([x, y + 1]);
-  }
-
-  ctx.putImageData(imgData, 0, 0);
 }
 
-/* ─── Utilities ─── */
-function hexToRgb(hex) {
-  const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
-  return m ? { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) } : null;
+#fill-panel button:active{
+
+    transform:scale(.98);
+
 }
 
-function hexToRgba(hex, a) {
-  const c = hexToRgb(hex);
-  return c ? `rgba(${c.r},${c.g},${c.b},${a})` : hex;
+/* -------------------- */
+/* Smooth Fade */
+/* -------------------- */
+
+#fill-panel *{
+
+    transition:.18s;
+
 }
-</script>
 /* ══════════════════ HOME SCREEN ══════════════════ */
 #home-screen {
   position: fixed; inset: 0; z-index: 3000;
