@@ -960,6 +960,52 @@ font-size:13px;
 
 color:#ff4444;
 
+}/* ═══════ LOADING SCREEN ═══════ */
+#loading-screen{
+  position:fixed;
+  inset:0;
+  background:#0b1020;
+  z-index:10000000;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+}
+#loading-screen.show{
+  display:flex;
+}
+.loader-ring{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  border:3px solid rgba(0,212,255,0.1);
+  border-top-color:#00d4ff;
+  animation:loaderSpin 1s linear infinite;
+  box-shadow:0 0 20px rgba(0,212,255,0.15);
+}
+@keyframes loaderSpin{
+  to{transform:rotate(360deg);}
+}
+.loader-text{
+  color:#9aa4b5;
+  font-size:14px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.loader-bar-track{
+  width:220px;
+  height:3px;
+  background:rgba(255,255,255,0.08);
+  border-radius:3px;
+  overflow:hidden;
+}
+.loader-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,#00d4ff,#7c3aed);
+  width:0%;
+  transition:width 5s linear;
 }
 </style>
 </head>
@@ -992,7 +1038,17 @@ color:#ff4444;
       <button class="home-delete" onclick="homeDiscardAutosave()">Discard</button>
     </div>
   </div>
+</div><!-- ═══════ LOADING SCREEN ═══════ -->
+<div id="loading-screen">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Loading Project</div>
+  <div class="loader-bar-track">
+    <div class="loader-bar-fill" id="loader-bar-fill"></div>
+  </div>
 </div>
+<!-- ═══════ END LOADING SCREEN ═══════ -->
+
+<!-- TOP BAR -->
 <!-- ═══════ END HOME SCREEN ═══════ -->
 
 <!-- TOP BAR -->
@@ -4478,20 +4534,38 @@ function homeSelectPreset(btn) {
 }
 
 function homeStartNewProject() {
-  state.canvasW = _homePreset.w;
-  state.canvasH = _homePreset.h;
-  state.fps = parseInt(document.getElementById('home-fps').value) || 24;
-  document.getElementById('fps-select') && (document.getElementById('fps-select').value = state.fps);
-  initCanvas();
-  updateAll();
-  document.getElementById('home-screen').classList.add('hidden');
+  showLoader(() => {
+    state.canvasW = _homePreset.w;
+    state.canvasH = _homePreset.h;
+    state.fps = parseInt(document.getElementById('home-fps').value) || 24;
+    if (document.getElementById('fps-select')) document.getElementById('fps-select').value = state.fps;
+    initCanvas();
+    updateAll();
+    document.getElementById('home-screen').classList.add('hidden');
+  });
 }
 
 function homeContinueProject() {
   const data = loadAutosave();
   if (!data) { homeStartNewProject(); return; }
-  applyAutosaveData(data);
-  document.getElementById('home-screen').classList.add('hidden');
+  showLoader(() => {
+    applyAutosaveData(data);
+    document.getElementById('home-screen').classList.add('hidden');
+  });
+}
+
+function showLoader(onComplete) {
+  const loader = document.getElementById('loading-screen');
+  const bar = document.getElementById('loader-bar-fill');
+  loader.classList.add('show');
+  // Force reflow so the transition plays
+  void bar.offsetWidth;
+  bar.style.width = '100%';
+  setTimeout(() => {
+    loader.classList.remove('show');
+    bar.style.width = '0%';
+    if (onComplete) onComplete();
+  }, 5000);
 }
 
 function homeDiscardAutosave() {
