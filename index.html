@@ -624,68 +624,113 @@ input[type=color] { width: 28px; height: 22px; padding: 0; border: 1px solid var
     transition:.18s;
 
 }
-<!-- =================== HOME SCREEN =================== -->
+/*══════════════════════════════════════
+            QUEBAME HOME
+══════════════════════════════════════*/
 
-<style>
 #home-screen{
     position:fixed;
-    top:0;
-    left:0;
-    width:100vw;
-    height:100vh;
-
+    inset:0;
     z-index:999999;
-
-    overflow:auto;
 
     display:flex;
     justify-content:center;
     align-items:center;
 
-    background:
-        radial-gradient(circle at top left,#00d4ff22,transparent 35%),
-        radial-gradient(circle at bottom right,#7c3aed22,transparent 40%),
-        linear-gradient(135deg,#090d16,#0d1322,#090d16);
+    overflow:hidden;
 
-    font-family:Inter,Arial,sans-serif;
+    background:
+    radial-gradient(circle at 15% 20%,rgba(0,212,255,.16),transparent 38%),
+    radial-gradient(circle at 90% 80%,rgba(124,58,237,.18),transparent 40%),
+    linear-gradient(135deg,#080b13,#0d1322,#0a101b);
+
+    font-family:Inter,"Segoe UI",sans-serif;
 }
 
+/* floating glow */
 
+#home-screen::before{
+content:"";
+position:absolute;
+width:650px;
+height:650px;
+border-radius:50%;
+background:radial-gradient(circle,
+rgba(0,212,255,.12),
+transparent 70%);
+filter:blur(50px);
+animation:floatGlow 10s ease-in-out infinite;
+}
+
+@keyframes floatGlow{
+
+0%{
+
+transform:translate(-120px,-60px);
+
+}
+
+50%{
+
+transform:translate(80px,50px);
+
+}
+
+100%{
+
+transform:translate(-120px,-60px);
+
+}
+
+}
 
 #home-screen.hidden{
-    display:none;
+
+display:none;
+
 }
+
+/*==========================*/
 
 .home-container{
 
-    width:470px;
-    max-width:92%;
+position:relative;
 
-    background:rgba(255,255,255,.04);
+width:540px;
 
-    backdrop-filter:blur(20px);
+max-width:92%;
 
-    border:1px solid rgba(255,255,255,.08);
+padding:55px;
 
-    border-radius:24px;
+border-radius:26px;
 
-    padding:45px;
+background:rgba(255,255,255,.05);
 
-    text-align:center;
+backdrop-filter:blur(24px);
 
-    box-shadow:
-    0 25px 70px rgba(0,0,0,.45);
+-webkit-backdrop-filter:blur(24px);
 
-    animation:popup .5s ease;
+border:1px solid rgba(255,255,255,.08);
+
+box-shadow:
+
+0 35px 80px rgba(0,0,0,.45);
+
+animation:homeAppear .45s ease;
+
+text-align:center;
+
+z-index:2;
+
 }
 
-@keyframes popup{
+@keyframes homeAppear{
 
 from{
 
 opacity:0;
 
-transform:translateY(25px);
+transform:translateY(30px);
 
 }
 
@@ -699,65 +744,81 @@ transform:none;
 
 }
 
+/*==========================*/
+
 .home-logo{
 
-font-size:54px;
+font-size:64px;
 
-font-weight:800;
+font-weight:900;
 
-letter-spacing:8px;
+letter-spacing:10px;
+
+color:#fff;
+
+margin-bottom:8px;
+
+text-shadow:
+
+0 0 20px rgba(0,212,255,.25);
+
+}
+
+.home-logo span{
 
 color:var(--accent);
-
-margin-bottom:12px;
 
 }
 
 .home-tagline{
 
-font-size:14px;
+font-size:15px;
 
-color:var(--text2);
+color:#9aa4b5;
 
-margin-bottom:40px;
+margin-bottom:42px;
+
+letter-spacing:.4px;
 
 }
+
+/*==========================*/
 
 .home-main-btn{
 
 width:100%;
 
-padding:18px;
+height:64px;
 
 border:none;
 
 border-radius:18px;
 
-font-size:18px;
+font-size:19px;
 
 font-weight:700;
 
 cursor:pointer;
 
-background:var(--accent);
+background:linear-gradient(135deg,#00d4ff,#3ea8ff);
 
-color:#08151c;
+color:#051018;
 
 transition:.25s;
-
-margin-bottom:18px;
 
 }
 
 .home-main-btn:hover{
 
-transform:translateY(-3px);
+transform:translateY(-4px);
 
-filter:brightness(1.08);
+box-shadow:
 
-box-shadow:0 15px 35px rgba(0,212,255,.35);
+0 18px 45px rgba(0,212,255,.35);
 
 }
+
+/*==========================*/
 
 .home-options{
 
@@ -765,27 +826,31 @@ display:flex;
 
 justify-content:center;
 
-gap:14px;
+gap:12px;
 
-margin-bottom:35px;
+margin:24px 0 34px;
 
 }
 
 .home-options select{
 
-background:var(--bg2);
+background:#1f2633;
 
-border:1px solid var(--border);
+border:1px solid rgba(255,255,255,.08);
 
-color:var(--text);
+color:white;
 
-padding:10px 14px;
+padding:11px 16px;
 
-border-radius:10px;
+border-radius:12px;
 
 font-size:13px;
 
+outline:none;
+
 }
+
+/*==========================*/
 
 .home-divider{
 
@@ -793,35 +858,35 @@ height:1px;
 
 background:rgba(255,255,255,.08);
 
-margin:30px 0;
+margin:18px 0 25px;
 
 }
 
 .home-title{
 
-font-size:13px;
+font-size:12px;
 
-color:var(--text2);
-
-letter-spacing:1px;
+color:#7d8797;
 
 text-transform:uppercase;
 
-margin-bottom:18px;
+letter-spacing:2px;
+
+margin-bottom:16px;
 
 }
 
+/*==========================*/
+
 .home-continue-thumb{
 
-width:100%;
+height:190px;
 
-height:170px;
+border-radius:18px;
 
-background:var(--bg2);
+background:#171d28;
 
-border-radius:16px;
-
-border:1px solid var(--border);
+border:1px solid rgba(255,255,255,.06);
 
 display:flex;
 
@@ -831,7 +896,7 @@ justify-content:center;
 
 overflow:hidden;
 
-margin-bottom:15px;
+margin-bottom:16px;
 
 }
 
@@ -847,7 +912,7 @@ max-height:100%;
 
 font-size:12px;
 
-color:var(--text2);
+color:#98a1af;
 
 margin-bottom:18px;
 
@@ -857,29 +922,27 @@ margin-bottom:18px;
 
 width:100%;
 
-padding:14px;
+height:52px;
 
 border:none;
 
 border-radius:14px;
 
-cursor:pointer;
+background:#232b38;
 
-background:var(--bg2);
-
-color:var(--text);
+color:white;
 
 font-size:15px;
 
-transition:.25s;
+cursor:pointer;
+
+transition:.2s;
 
 }
 
 .home-resume:hover{
 
-background:var(--sel);
-
-border-color:var(--accent);
+background:#2b3646;
 
 }
 
@@ -891,9 +954,9 @@ background:none;
 
 border:none;
 
-cursor:pointer;
+color:#ff6666;
 
-color:#ff6b6b;
+cursor:pointer;
 
 font-size:13px;
 
@@ -901,78 +964,9 @@ font-size:13px;
 
 .home-delete:hover{
 
-text-decoration:underline;
+color:#ff4444;
 
 }
-</style>
-
-<div id="home-screen">
-
-<div class="home-container">
-
-<div class="home-logo">
-QUEBAME
-</div>
-
-<div class="home-tagline">
-Professional 2D Animation Studio
-</div>
-
-<button class="home-main-btn"
-onclick="homeStartNewProject()">
-＋ Start New Project
-</button>
-
-<div class="home-options">
-
-<select id="home-fps">
-
-<option value="12">12 FPS</option>
-
-<option value="24" selected>24 FPS</option>
-
-<option value="30">30 FPS</option>
-
-<option value="60">60 FPS</option>
-
-</select>
-
-</div>
-
-<div id="home-continue-card">
-
-<div class="home-divider"></div>
-
-<div class="home-title">
-Continue Previous Project
-</div>
-
-<div
-class="home-continue-thumb"
-id="home-continue-thumb">
-</div>
-
-<div
-class="home-meta"
-id="home-continue-meta">
-No recent project
-</div>
-
-<button
-class="home-resume"
-onclick="homeContinueProject()">
-Resume Project
-</button>
-
-<button
-class="home-delete"
-onclick="homeDiscardAutosave()">
-Delete Saved Project
-</button>
-
-</div>
-</div>
-</div>
 <!-- TOP BAR -->
 <div id="topbar">
   <div id="logo">QUEBAME</div>
