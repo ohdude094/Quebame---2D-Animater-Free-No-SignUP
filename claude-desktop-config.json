@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "quebame": {
+      "command": "node",
+      "args": [
+        "{REPO_ROOT}/mcp-server/dist/index.js"
+      ],
+      "env": {
+        "NODE_PATH": "{REPO_ROOT}/mcp-server/node_modules"
+      }
+    }
+  }
+}

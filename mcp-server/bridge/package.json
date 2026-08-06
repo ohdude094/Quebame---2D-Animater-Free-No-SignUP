@@ -1,0 +1,9 @@
+{
+  "name": "quebame-bridge",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "ws": "^8.18.0",
+    "execa": "^9.5.0"
+  }
+}
