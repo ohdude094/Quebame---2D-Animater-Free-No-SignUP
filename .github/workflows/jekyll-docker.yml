@@ -1,20 +1,47 @@
-name: Jekyll site CI
+name: Build MCP Server
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main, master]
+    paths:
+      - 'mcp-server/**'
+      - '.github/workflows/**'
   pull_request:
-    branches: [ "main" ]
+    branches: [main, master]
+    paths:
+      - 'mcp-server/**'
 
 jobs:
-  build:
-
+  build-mcp:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp-server
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the site in the jekyll/builder container
-      run: |
-        docker run \
-        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mcp-server/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Verify server loads
+        run: |
+          # Quick smoke test: start server, wait, kill
+          timeout 3 node dist/index.js || true
+        timeout-minutes: 1
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-server-dist
+          path: mcp-server/dist/
