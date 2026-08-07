@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quebame v2.0</title>
+<title>Quebame v3.0</title>
 <script>
 // Apply saved theme before first paint to avoid a flash of the wrong theme.
 (function(){
@@ -591,7 +591,79 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
 </style>
 </head>
 <body>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const svgMarkup = `<!-- gooey hero animation (decorative) -->
+<svg viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+  <defs>
+    <filter id="goo">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur"/>
+      <feColorMatrix in="blur" mode="matrix"
+        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo"/>
+      <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+    </filter>
 
+    <linearGradient id="grad" x1="0" x2="1">
+      <stop offset="0" stop-color="#6EE7B7"/>
+      <stop offset="1" stop-color="#60A5FA"/>
+    </linearGradient>
+
+    <style><![CDATA[
+      svg { width:100%; height: auto; display:block; }
+      .bg { fill: url(#grad); opacity: 0.06; }
+      .blob { filter: url(#goo); transform-origin: 50% 50%; transform-box: fill-box; }
+      .circle { mix-blend-mode: screen; opacity: .95; transform-box: fill-box; }
+      .c1 { animation: move1 6s ease-in-out infinite alternate; }
+      .c2 { animation: move2 7s ease-in-out infinite alternate; }
+      .c3 { animation: move3 5s ease-in-out infinite alternate; }
+      .ring { fill: none; stroke: rgba(255,255,255,0.9); stroke-linecap: round;
+               stroke-dasharray: 6 10; animation: dash 4s linear infinite; }
+
+      @keyframes move1 { 0% { transform: translate(0,0) scale(1) } 100% { transform: translate(36px,-18px) scale(1.05) } }
+      @keyframes move2 { 0% { transform: translate(0,0) scale(1) } 100% { transform: translate(-28px,28px) scale(0.95) } }
+      @keyframes move3 { 0% { transform: translate(0,0) scale(1) } 100% { transform: translate(18px,36px) scale(1.08) } }
+      @keyframes dash { to { stroke-dashoffset: -32 } }
+    ]]></style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="800" height="300" />
+
+  <!-- Gooey blobs -->
+  <g class="blob" filter="url(#goo)">
+    <circle class="circle c1" cx="200" cy="150" r="64" fill="#6EE7B7"/>
+    <circle class="circle c2" cx="320" cy="120" r="44" fill="#60A5FA"/>
+    <circle class="circle c3" cx="270" cy="200" r="52" fill="#C084FC"/>
+    <circle class="circle c1" cx="420" cy="170" r="36" fill="#F472B6"/>
+  </g>
+
+  <!-- Subtle animated strokes -->
+  <g>
+    <path class="ring" d="M60,200 C160,80 300,80 400,200" stroke-width="3" stroke="#ffffff" />
+    <path class="ring" d="M160,60 C260,200 420,200 520,80" stroke-width="2" stroke="#ffffff" style="opacity:0.6" />
+  </g>
+</svg>`;
+
+  // target selectors to replace an existing hero element if present
+  const target = document.getElementById('hero-illustration')
+                || document.querySelector('.hero-illustration')
+                || document.getElementById('hero')
+                || document.querySelector('.hero');
+
+  if (target) {
+    // Replace contents of the target element with the animated SVG
+    target.innerHTML = svgMarkup;
+    target.setAttribute('aria-hidden', 'true');
+    target.classList.add('animated-hero-injected');
+  } else {
+    // Insert at the very top of <body> as a container
+    const wrapper = document.createElement('div');
+    wrapper.id = 'hero-illustration';
+    wrapper.className = 'animated-hero-injected';
+    wrapper.innerHTML = svgMarkup;
+    document.body.insertBefore(wrapper, document.body.firstChild);
+  }
+});
+</script>
 <!-- HOME PAGE -->
 <div id="home-page">
   <div id="home-topbar">
