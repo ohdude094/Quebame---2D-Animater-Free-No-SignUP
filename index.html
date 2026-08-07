@@ -592,7 +592,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
 </head>
 <body>
 
-<!-- PREMIUM HOME PAGE REDESIGN for QUEBAME -->
+<!-- PREMIUM INTERACTIVE HOME PAGE REDESIGN for QUEBAME -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
@@ -629,11 +629,9 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     line-height: 1.5;
   }
 
-  #home-page * {
-    box-sizing: border-box;
-  }
+  #home-page * { box-sizing: border-box; }
 
-  /* Topbar (Glassmorphism) */
+  /* Topbar */
   #home-topbar {
     display: flex;
     justify-content: space-between;
@@ -698,11 +696,10 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     display: flex;
     flex-direction: column;
     align-items: center;
+    perspective: 1000px; /* Required for the 3D cube to look right */
   }
 
-  #home-scroll::-webkit-scrollbar {
-    width: 8px;
-  }
+  #home-scroll::-webkit-scrollbar { width: 8px; }
   #home-scroll::-webkit-scrollbar-thumb {
     background: var(--bg-surface-hover);
     border-radius: 4px;
@@ -721,11 +718,58 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     100% { opacity: 1; transform: translateY(0); }
   }
 
-  #home-hero-mark svg {
-    margin-bottom: 24px;
-    filter: drop-shadow(0 0 20px rgba(139,92,246,0.3));
+  /* --- 3D INTERACTIVE CUBE --- */
+  #cube-container {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 30px auto;
+    perspective: 1000px;
   }
 
+  #tracking-cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg);
+    /* Transition creates smooth easing when the mouse stops moving */
+    transition: transform 0.1s ease-out; 
+  }
+
+  /* Base styling for all 6 faces */
+  .cube-face {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    background: rgba(24, 24, 27, 0.6);
+    backdrop-filter: blur(4px);
+    box-shadow: inset 0 0 20px rgba(236, 72, 153, 0.2), 0 0 15px rgba(139, 92, 246, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+  }
+
+  /* Inner dot / design inside the cube faces to show movement */
+  .cube-face::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+
+  /* Positioning the faces in 3D space (50px is half of 100px width/height) */
+  .face-front  { transform: rotateY(  0deg) translateZ(50px); }
+  .face-back   { transform: rotateY(180deg) translateZ(50px); }
+  .face-right  { transform: rotateY( 90deg) translateZ(50px); }
+  .face-left   { transform: rotateY(-90deg) translateZ(50px); }
+  .face-top    { transform: rotateX( 90deg) translateZ(50px); }
+  .face-bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+  /* Hero Typography */
   #home-hero h1 {
     font-size: 3.5rem;
     font-weight: 700;
@@ -766,9 +810,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, opacity 0.2s ease;
   }
 
-  .btn:active {
-    transform: scale(0.97);
-  }
+  .btn:active { transform: scale(0.97); }
 
   .btn.primary {
     background: var(--accent-gradient);
@@ -792,7 +834,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     transform: translateY(-2px);
   }
 
-  /* Autosave Restore Banner */
+  /* Rest of UI (Banners, Cards, Gallery) */
   #restore-banner {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.2);
@@ -815,29 +857,12 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     margin-bottom: 4px;
   }
 
-  #restore-banner-sub {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-  }
-
-  #restore-banner-actions {
-    display: flex;
-    gap: 12px;
-  }
-
-  #restore-banner-actions .btn.primary {
-    background: #f59e0b;
-    box-shadow: none;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-  }
+  #restore-banner-sub { color: var(--text-secondary); font-size: 0.9rem; }
+  #restore-banner-actions { display: flex; gap: 12px; }
   
-  #restore-banner-actions .btn:not(.primary) {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-  }
+  #restore-banner-actions .btn.primary { background: #f59e0b; box-shadow: none; padding: 8px 16px; font-size: 0.9rem; }
+  #restore-banner-actions .btn:not(.primary) { padding: 8px 16px; font-size: 0.9rem; }
 
-  /* Template Grid (Bento Box Style) */
   #template-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -874,14 +899,8 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   }
 
-  .template-card:hover::before {
-    opacity: 0.05;
-  }
-
-  .template-card > * {
-    position: relative;
-    z-index: 1;
-  }
+  .template-card:hover::before { opacity: 0.05; }
+  .template-card > * { position: relative; z-index: 1; }
 
   .template-thumb {
     width: 56px;
@@ -893,25 +912,15 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     margin-bottom: 20px;
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--border-color);
-    color: var(--text-primary);
   }
 
   .template-thumb-blank { color: #a1a1aa; }
   .template-thumb-rig { color: #3b82f6; }
   .template-thumb-lipsync { color: #ec4899; }
 
-  .template-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
+  .template-name { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; }
+  .template-desc { font-size: 0.95rem; color: var(--text-secondary); }
 
-  .template-desc {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-  }
-
-  /* Gallery Section */
   #gallery-header {
     width: 100%;
     max-width: 900px;
@@ -923,17 +932,8 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     padding-bottom: 12px;
   }
 
-  #gallery-header h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
-  }
-
-  #gallery-count {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
-  }
+  #gallery-header h2 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+  #gallery-count { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
 
   #project-gallery {
     width: 100%;
@@ -954,33 +954,16 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     color: var(--text-secondary);
   }
 
-  #gallery-empty svg {
-    margin-bottom: 16px;
-    opacity: 0.5;
-  }
+  #gallery-empty p { font-size: 1.1rem; color: var(--text-primary); margin: 0 0 8px 0; font-weight: 500; }
 
-  #gallery-empty p {
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    margin: 0 0 8px 0;
-    font-weight: 500;
-  }
-
-  #gallery-empty span {
-    font-size: 0.9rem;
-  }
-
-  /* Responsive Design adjustments */
   @media (max-width: 768px) {
     #home-hero h1 { font-size: 2.5rem; }
-    #home-topbar { padding: 16px; }
-    #home-scroll { padding: 40px 16px; }
     #home-hero-actions { flex-direction: column; }
     #restore-banner { flex-direction: column; text-align: center; gap: 16px; }
   }
 </style>
 
-<!-- HTML STRUCTURE (Your original logic/IDs preserved perfectly) -->
+<!-- HTML STRUCTURE -->
 <div id="home-page">
   <div id="home-topbar">
     <div id="home-logo"><span id="home-logo-mark">◆</span> QUEBAME</div>
@@ -1003,19 +986,19 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
 
   <div id="home-scroll">
     <div id="home-hero">
-      <div id="home-hero-mark" aria-hidden="true">
-        <svg viewBox="0 0 120 90" width="150" height="112">
-          <rect x="4" y="4" width="112" height="82" rx="10" fill="none" stroke="var(--accent-color)" stroke-width="2" opacity="0.35"/>
-          <circle id="hero-blob" cx="40" cy="46" r="17" fill="url(#grad1)" opacity="0.85"/>
-          <path id="hero-stroke" d="M66 60 Q84 20 104 46" fill="none" stroke="#ec4899" stroke-width="4" stroke-linecap="round"/>
-          <defs>
-            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-        </svg>
+      
+      <!-- NEW 3D INTERACTIVE CUBE -->
+      <div id="cube-container">
+        <div id="tracking-cube">
+          <div class="cube-face face-front"></div>
+          <div class="cube-face face-back"></div>
+          <div class="cube-face face-right"></div>
+          <div class="cube-face face-left"></div>
+          <div class="cube-face face-top"></div>
+          <div class="cube-face face-bottom"></div>
+        </div>
       </div>
+      
       <h1>Bring your ideas to life, frame by frame.</h1>
       <p>Draw, rig, and animate short films right in your browser — with fill, character rigging, lip-sync, and AI tools built in.</p>
       <div id="home-hero-actions">
@@ -1028,7 +1011,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
       <input type="file" id="home-open-file-input" accept=".quebame,application/json" style="display:none">
     </div>
 
-    <!-- Set style="display:flex" in your JS when you want to show it -->
+    <!-- Rest of layout remains perfectly mapped to your logic -->
     <div id="restore-banner" style="display:none;">
       <div id="restore-banner-text">
         <strong>We found unsaved work from your last session.</strong>
@@ -1076,6 +1059,46 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     </div>
   </div>
 </div>
+
+<!-- SCRIPT FOR CUBE MOUSE TRACKING -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cube = document.getElementById('tracking-cube');
+    const homePage = document.getElementById('home-page');
+
+    if (!cube || !homePage) return;
+
+    // Track mouse movement across the entire page
+    homePage.addEventListener('mousemove', (e) => {
+      // Find the center of the viewport
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      
+      // Calculate how far the mouse is from center (values between -1 and 1)
+      const mouseX = (e.clientX - centerX) / centerX;
+      const mouseY = (e.clientY - centerY) / centerY;
+      
+      // Max rotation in degrees
+      const maxRotation = 60; 
+      
+      // Map coordinates to X and Y rotation. 
+      // Negative on mouseY so it tracks "up" correctly.
+      const rotateX = -(mouseY * maxRotation);
+      const rotateY = (mouseX * maxRotation);
+
+      // Apply transformation (with a base isometric tilt so it looks 3D even at center)
+      cube.style.transform = `rotateX(${rotateX - 15}deg) rotateY(${rotateY + 20}deg)`;
+    });
+
+    // Reset to idle position when mouse leaves the page
+    homePage.addEventListener('mouseleave', () => {
+      cube.style.transform = `rotateX(-15deg) rotateY(20deg)`;
+    });
+    
+    // Set initial idle tilt
+    cube.style.transform = `rotateX(-15deg) rotateY(20deg)`;
+  });
+</script>
 <!-- /HOME PAGE -->
 
 <div id="editor-shell">
