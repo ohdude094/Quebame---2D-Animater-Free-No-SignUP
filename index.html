@@ -696,7 +696,8 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     display: flex;
     flex-direction: column;
     align-items: center;
-    perspective: 1000px; /* Required for the 3D cube to look right */
+    perspective: 1000px;
+    overflow-x: hidden; /* Prevent horizontal scroll when things fall */
   }
 
   #home-scroll::-webkit-scrollbar { width: 8px; }
@@ -732,11 +733,9 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     position: relative;
     transform-style: preserve-3d;
     transform: rotateX(0deg) rotateY(0deg);
-    /* Transition creates smooth easing when the mouse stops moving */
     transition: transform 0.1s ease-out; 
   }
 
-  /* Base styling for all 6 faces */
   .cube-face {
     position: absolute;
     width: 100px;
@@ -751,7 +750,6 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     border-radius: 12px;
   }
 
-  /* Inner dot / design inside the cube faces to show movement */
   .cube-face::after {
     content: '';
     width: 20px;
@@ -761,7 +759,6 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     opacity: 0.5;
   }
 
-  /* Positioning the faces in 3D space (50px is half of 100px width/height) */
   .face-front  { transform: rotateY(  0deg) translateZ(50px); }
   .face-back   { transform: rotateY(180deg) translateZ(50px); }
   .face-right  { transform: rotateY( 90deg) translateZ(50px); }
@@ -834,7 +831,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     transform: translateY(-2px);
   }
 
-  /* Rest of UI (Banners, Cards, Gallery) */
+  /* Banners, Cards, Gallery */
   #restore-banner {
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.2);
@@ -850,16 +847,9 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
     backdrop-filter: blur(10px);
   }
 
-  #restore-banner-text strong {
-    display: block;
-    color: #fbbf24;
-    font-size: 1.1rem;
-    margin-bottom: 4px;
-  }
-
+  #restore-banner-text strong { display: block; color: #fbbf24; font-size: 1.1rem; margin-bottom: 4px; }
   #restore-banner-sub { color: var(--text-secondary); font-size: 0.9rem; }
   #restore-banner-actions { display: flex; gap: 12px; }
-  
   #restore-banner-actions .btn.primary { background: #f59e0b; box-shadow: none; padding: 8px 16px; font-size: 0.9rem; }
   #restore-banner-actions .btn:not(.primary) { padding: 8px 16px; font-size: 0.9rem; }
 
@@ -976,6 +966,13 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M10 13h4"/></svg>
         Shortcuts
       </button>
+      
+      <!-- NEW GRAVITY DROP BUTTON -->
+      <button class="tb-btn" onclick="triggerGravityDrop()" title="Gravity Drop Effect">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 17l-5 5-5-5"/></svg>
+        Gravity
+      </button>
+
       <button class="tb-btn theme-toggle-btn" onclick="toggleTheme()" title="Switch between dark and light theme">
         <svg class="icon-moon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -987,7 +984,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
   <div id="home-scroll">
     <div id="home-hero">
       
-      <!-- NEW 3D INTERACTIVE CUBE -->
+      <!-- 3D INTERACTIVE CUBE -->
       <div id="cube-container">
         <div id="tracking-cube">
           <div class="cube-face face-front"></div>
@@ -1011,7 +1008,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
       <input type="file" id="home-open-file-input" accept=".quebame,application/json" style="display:none">
     </div>
 
-    <!-- Rest of layout remains perfectly mapped to your logic -->
+    <!-- Banner -->
     <div id="restore-banner" style="display:none;">
       <div id="restore-banner-text">
         <strong>We found unsaved work from your last session.</strong>
@@ -1060,7 +1057,7 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
   </div>
 </div>
 
-<!-- SCRIPT FOR CUBE MOUSE TRACKING -->
+<!-- SCRIPTS FOR CUBE TRACKING & GRAVITY EFFECT -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const cube = document.getElementById('tracking-cube');
@@ -1068,36 +1065,67 @@ kbd { background: var(--bg4); border: 1px solid var(--border); border-radius: 4p
 
     if (!cube || !homePage) return;
 
-    // Track mouse movement across the entire page
+    // Track mouse movement across the page
     homePage.addEventListener('mousemove', (e) => {
-      // Find the center of the viewport
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
-      
-      // Calculate how far the mouse is from center (values between -1 and 1)
       const mouseX = (e.clientX - centerX) / centerX;
       const mouseY = (e.clientY - centerY) / centerY;
       
-      // Max rotation in degrees
       const maxRotation = 60; 
-      
-      // Map coordinates to X and Y rotation. 
-      // Negative on mouseY so it tracks "up" correctly.
       const rotateX = -(mouseY * maxRotation);
       const rotateY = (mouseX * maxRotation);
 
-      // Apply transformation (with a base isometric tilt so it looks 3D even at center)
       cube.style.transform = `rotateX(${rotateX - 15}deg) rotateY(${rotateY + 20}deg)`;
     });
 
-    // Reset to idle position when mouse leaves the page
+    // Reset to idle
     homePage.addEventListener('mouseleave', () => {
       cube.style.transform = `rotateX(-15deg) rotateY(20deg)`;
     });
     
-    // Set initial idle tilt
+    // Initial position
     cube.style.transform = `rotateX(-15deg) rotateY(20deg)`;
   });
+
+  // --- GRAVITY DROP FUNCTION ---
+  function triggerGravityDrop() {
+    // Select all the main visual elements on the page
+    const elements = document.querySelectorAll('#cube-container, #home-hero h1, #home-hero p, .btn, .template-card, #gallery-header, #gallery-empty');
+    
+    // 1. Make everything tumble and fall down
+    elements.forEach(el => {
+      // Calculate a random chaotic drop for each element
+      const randomX = (Math.random() - 0.5) * 300; // Drift slightly left or right
+      const dropY = window.innerHeight + 200;      // Fall completely off the bottom of the screen
+      const randomRotate = (Math.random() - 0.5) * 90; // Random tilt while falling
+      
+      // Force inline transition so they fall smoothly, bypassing their default hover speeds
+      el.style.transition = 'transform 1.2s cubic-bezier(0.5, 0, 1, 1), opacity 1s ease-in';
+      el.style.transform = `translate(${randomX}px, ${dropY}px) rotate(${randomRotate}deg)`;
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none'; // Prevent clicking while they are falling
+    });
+
+    // 2. Exactly 5 seconds later, bring them back
+    setTimeout(() => {
+      elements.forEach(el => {
+        // Change transition so they float back up smoothly
+        el.style.transition = 'transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.5s ease-out';
+        
+        // Remove the inline transform/opacity to let CSS reset them to normal
+        el.style.transform = '';
+        el.style.opacity = '';
+        
+        // 3. Clean up the inline transitions after they finish arriving, 
+        // so their normal hover effects (like buttons popping up) work again!
+        setTimeout(() => {
+          el.style.transition = '';
+          el.style.pointerEvents = '';
+        }, 1500);
+      });
+    }, 5000); // 5000 milliseconds = 5 seconds
+  }
 </script>
 <!-- /HOME PAGE -->
 
