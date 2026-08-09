@@ -1,0 +1,34 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "quebame-2-d-animater-free.vercel",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Quebame",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://quebame-2-d-animater-free.vercel.app/favicon.ico",
+      "type": "image/x-icon",
+      "isSquare": false,
+      "isPng": false,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 0,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ],
+  "description": "Make high quality animations",
+  "lang": "en",
+  "prefer_related_applications": false,
+  "categories": [
+    "design",
+    "photo &amp; video",
+    "social",
+    "video"
+  ]
+}
